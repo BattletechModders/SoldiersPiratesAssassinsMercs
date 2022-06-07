@@ -18,7 +18,7 @@ namespace SoldiersPiratesAssassinsMercs
     {
         internal static DeferringLogger modLog;
         private static string modDir;
-        public static readonly Random Random = new Random(456);
+        public static readonly Random Random = new Random();
 
         public static Settings modSettings;
         public const string HarmonyPackage = "us.tbone.SoldiersPiratesAssassinsMercs";
@@ -56,12 +56,14 @@ namespace SoldiersPiratesAssassinsMercs
         public bool enableDebug = false;
         public bool enableTrace = false;
         public List<string> FactionBlacklist = new List<string>();
-        public Dictionary<SimGameReputation, int> FactionAppearanceWeightsByReputation =
-            new Dictionary<SimGameReputation, int>();
+        public Dictionary<string, int> FactionAppearanceWeightsByReputation =
+            new Dictionary<string, int>();
 
         public Classes.ConfigOptions.OpforReplacementConfig OpforReplacementConfig =
             new Classes.ConfigOptions.OpforReplacementConfig();
 
-        public string FallbackUnitFactionTag = ""; //probably be just "Mercenaries" for BTA
+        public Classes.ConfigOptions.MercLanceAdditionConfig MercLanceAdditionConfig =
+            new Classes.ConfigOptions.MercLanceAdditionConfig();
+        public string FallbackUnitFactionTag = ""; //probably be just "mercenaries" for BTA// faction tags are lowercase
     }
 }

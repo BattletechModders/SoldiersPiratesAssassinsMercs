@@ -21,17 +21,21 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             return matchingDataByTagSet;
         }
 
-        public static void AssignFactionToTeamPublic(this TeamOverride team, Dictionary<string, int> teamFactions)
+        public static void ReAssignFactionToTeam(this TeamOverride team, Dictionary<string, int> teamFactions)
         {
             if (teamFactions.ContainsKey(team.teamGuid))
             {
                 FactionValue factionByID = FactionEnumeration.GetFactionByID(teamFactions[team.teamGuid]);
-                if (team.FactionValue.IsInvalidUnset)
-                {
-                    team.faction = factionByID.Name;
-                }
+                team.faction = factionByID.Name;
             }
         }
+
+        public static void AssignMercFactionToTeamState(this TeamOverride team, int mercFactionKey)
+        {
+            FactionValue factionByID = FactionEnumeration.GetFactionByID(mercFactionKey);
+            team.faction = factionByID.Name;
+        }
+
         public static FactionValue GetFactionValueFromString(string factionID)
         {
             FactionValue result = FactionEnumeration.GetInvalidUnsetFactionValue();
@@ -43,25 +47,11 @@ namespace SoldiersPiratesAssassinsMercs.Framework
         }
         public static int GetReputationMercFactionWeight(SimGameReputation repValue)
         {
-            switch (repValue)
+            if (ModInit.modSettings.FactionAppearanceWeightsByReputation.ContainsKey(repValue.ToString()))
             {
-                case SimGameReputation.LOATHED:
-                    return ModInit.modSettings.FactionAppearanceWeightsByReputation[SimGameReputation.LOATHED];
-                case SimGameReputation.HATED:
-                    return ModInit.modSettings.FactionAppearanceWeightsByReputation[SimGameReputation.HATED];
-                case SimGameReputation.DISLIKED:
-                    return ModInit.modSettings.FactionAppearanceWeightsByReputation[SimGameReputation.DISLIKED];
-                case SimGameReputation.INDIFFERENT:
-                    return ModInit.modSettings.FactionAppearanceWeightsByReputation[SimGameReputation.INDIFFERENT];
-                case SimGameReputation.LIKED:
-                    return ModInit.modSettings.FactionAppearanceWeightsByReputation[SimGameReputation.LIKED];
-                case SimGameReputation.FRIENDLY:
-                    return ModInit.modSettings.FactionAppearanceWeightsByReputation[SimGameReputation.FRIENDLY];
-                case SimGameReputation.HONORED:
-                    return ModInit.modSettings.FactionAppearanceWeightsByReputation[SimGameReputation.HONORED];
-                default:
-                    return ModInit.modSettings.FactionAppearanceWeightsByReputation[SimGameReputation.HONORED];
+                return ModInit.modSettings.FactionAppearanceWeightsByReputation[repValue.ToString()];
             }
+            return 0;
         }
         public static int GetMercFactionPoolFromWeight(SimGameState sim)
         {
@@ -69,6 +59,8 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             var factionPool = new List<int>();
             foreach (var faction in ModState.simMercFactions)
             {
+                ModInit.modLog?.Trace?.Write(
+                    $"[GetMercFactionPoolFromWeight] Processing reputation for Merc group: {faction}");
                 var factionValue = GetFactionValueFromString(faction);
                 var rep = sim.GetReputation(factionValue);
                 var weight = GetReputationMercFactionWeight(rep);
@@ -112,13 +104,51 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             if (roll < chance) return true;
             return false;
         }
+        public static bool ShouldAddMercLance(ContractOverride contractOverride)
+        {
+            var chance = ModInit.modSettings.MercLanceAdditionConfig.BaseReplaceChance;
+            if (ModInit.modSettings.MercLanceAdditionConfig.BlacklistContractIDs.Contains(contractOverride.ID))
+            {
+                ModInit.modLog?.Trace?.Write($"[ShouldAddMercLance] {contractOverride.ID} is blacklisted, not replacing");
+                return false;
+            }
+
+            if (ModInit.modSettings.MercLanceAdditionConfig.BlacklistContractTypes.Contains(contractOverride
+                    .ContractTypeValue.Name))
+            {
+                ModInit.modLog?.Trace?.Write($"[ShouldAddMercLance] {contractOverride.ContractTypeValue.Name} is blacklisted, not replacing");
+                return false;
+            }
+            if (ModInit.modSettings.MercLanceAdditionConfig.FactionsReplaceOverrides.ContainsKey(contractOverride
+                    .targetTeam.faction))
+            {
+                chance = ModInit.modSettings.MercLanceAdditionConfig.FactionsReplaceOverrides[contractOverride.targetTeam.faction];
+            }
+            var roll = ModInit.Random.NextDouble();
+            ModInit.modLog?.Info?.Write($"[ShouldAddMercLance] Roll {roll} < chance {chance}? {roll < chance}");
+            if (roll < chance)
+            {
+                ModState.ActiveContractShouldReplaceLanceWithMercs = true;
+                return true;
+            }
+            return false;
+
+        }
     }
 }
-//Contract.AddTeamFaction() and dictionary Contract.teamFactionIDs has faction info; dict is teamGUID [target team, etc] key, factionID (as key int) value from faction.json; bleh
 
+
+//Contract.AddTeamFaction() and dictionary Contract.teamFactionIDs has faction info; dict is teamGUID [target team, etc] key, factionID (as key int) value from faction.json; bleh
 
 //prep contract is where teamFactionIDs get factions added to it (team guid, faction int)
 
 //assignFactionsToTeams is hwere targetTeam gets faction assigned to it
 
 //patch GenerateUnits and override targetTeam?
+
+
+//MC -> may need to patch AddTargetLanceWithDestroyObjectiveBatch to inject new team (possibly use target ally? and just disallow in 3 way?)
+
+// assign new AI team via TeamDefinition ExtraTeamDefinitionGuidNames so extra merc team will be added by BuildItemRegistry at contract start // will need to make a GUID and keep it consistent
+
+//will need to generate new TeamOverride and do...something with it. FACK

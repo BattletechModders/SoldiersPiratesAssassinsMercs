@@ -42,6 +42,9 @@
     <Reference Include="IRBTModUtils">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BATTLETECH\Mods\IRBTModUtils\IRBTModUtils.dll</HintPath>
     </Reference>
+    <Reference Include="MissionControl">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BATTLETECH\Mods\MissionControl\MissionControl.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BATTLETECH\BattleTech_Data\Managed\Newtonsoft.Json.dll</HintPath>
@@ -72,6 +75,7 @@
     <Compile Include="Framework\Utils.cs" />
     <Compile Include="Framework\ModState.cs" />
     <Compile Include="ModInit.cs" />
+    <Compile Include="Patches\Combatgame.cs" />
     <Compile Include="Patches\Simgame.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

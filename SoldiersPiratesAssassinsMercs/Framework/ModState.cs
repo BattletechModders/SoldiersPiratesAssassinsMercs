@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BattleTech;
+using BattleTech.Framework;
 
 namespace SoldiersPiratesAssassinsMercs.Framework
 {
@@ -11,24 +12,30 @@ namespace SoldiersPiratesAssassinsMercs.Framework
     {
         public static List<string> simDisplayedFactions = new List<string>();
         public static List<string> simMercFactions = new List<string>();
-        public static string MercFactionForReplacement = "";
+        public static TeamOverride MercFactionOverride = null;
+        public static TeamOverride OriginalTargetFactionOverride = null;
 
-        public static List<string> GetSimDisplayedFactions()
+        public static bool ActiveContractShouldReplaceLanceWithMercs = false;
+        public static TeamOverride HostileMercLanceTeamOverride = null;
+
+
+
+        public static bool ActiveContractShouldSpawnAlliedMercs = false;
+
+        public static GameContext OriginalGameContext
         {
-            return simDisplayedFactions;
+            get;
+            set; 
         }
-        public static List<string> GetSimMercFactions()
-        {
-            return simMercFactions;
-        }
+
         public static void InitializeMercFactionList(SimGameState sim)
         {
             if (simMercFactions.Count != 0) return;
             ModState.simDisplayedFactions = new List<string>(sim.displayedFactions);
             foreach (var faction in FactionEnumeration.FactionList)
             {
-                if (!faction.IsRealFaction || !faction.DoesGainReputation ||
-                    (!faction.IsMercenary && !faction.IsPirate)) continue;
+                if (!faction.IsRealFaction ||
+                    (!faction.IsMercenary)) continue;
                 if (!ModInit.modSettings.FactionBlacklist.Contains(faction.Name))
                 {
                     ModState.simMercFactions.Add(faction.Name);
@@ -38,7 +45,12 @@ namespace SoldiersPiratesAssassinsMercs.Framework
 
         public static void ResetStateAfterContract()
         {
-            MercFactionForReplacement = "";
+            MercFactionOverride = null;
+            OriginalTargetFactionOverride = null;
+            OriginalGameContext = null;
+            ActiveContractShouldReplaceLanceWithMercs = false;
+            ActiveContractShouldSpawnAlliedMercs = false;
+            HostileMercLanceTeamOverride = null;
         }
     }
 }
