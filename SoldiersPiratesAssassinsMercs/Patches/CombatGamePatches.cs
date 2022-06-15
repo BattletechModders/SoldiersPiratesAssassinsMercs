@@ -9,7 +9,7 @@ using SoldiersPiratesAssassinsMercs.Framework;
 
 namespace SoldiersPiratesAssassinsMercs.Patches
 {
-    internal class Combatgame
+    public class CombatGamePatches
     {
         [HarmonyPatch(typeof(CombatGameState), "OnCombatGameDestroyed")]
         public static class CombatGameState_OnCombatGameDestroyed

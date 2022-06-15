@@ -75,8 +75,11 @@
     <Compile Include="Framework\Utils.cs" />
     <Compile Include="Framework\ModState.cs" />
     <Compile Include="ModInit.cs" />
-    <Compile Include="Patches\Combatgame.cs" />
-    <Compile Include="Patches\Simgame.cs" />
+    <Compile Include="Patches\MissionControlPatches.cs" />
+    <Compile Include="Patches\DebugPatches.cs" />
+    <Compile Include="Patches\SimGamePatches.cs" />
+    <Compile Include="Patches\CombatGamePatches.cs" />
+    <Compile Include="Patches\ContractPatches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

@@ -27,13 +27,40 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             {
                 FactionValue factionByID = FactionEnumeration.GetFactionByID(teamFactions[team.teamGuid]);
                 team.faction = factionByID.Name;
+                ModState.HostileMercTeamDefinition.FactionValue = factionByID;
             }
+        }
+
+        public static void ProcessHeraldryLoadRequest(this TeamOverride teamOverride, SimGameState sim)
+        {
+            var factionDef = teamOverride.FactionDef;
+            LoadRequest loadRequest = sim.DataManager.CreateLoadRequest(delegate(LoadRequest request)
+            {
+                var heraldryDef = HeraldryDef.GetHeraldryDefForFactionDef(sim.DataManager, factionDef);
+                ProcessHeraldryResources(sim, heraldryDef, null);
+            }, false);
+            loadRequest.ProcessRequests(10U);
+        }
+
+        public static void ProcessHeraldryResources(SimGameState sim, HeraldryDef heraldryDef, Action loadCompleteCallback = null)
+        {
+            LoadRequest loadRequest = sim.DataManager.CreateLoadRequest(delegate (LoadRequest request)
+            {
+                loadCompleteCallback?.Invoke();
+            }, false);
+            loadRequest.AddBlindLoadRequest(BattleTechResourceType.Texture2D, heraldryDef.textureLogoID, new bool?(false));
+            loadRequest.AddBlindLoadRequest(BattleTechResourceType.Sprite, heraldryDef.textureLogoID, new bool?(false));
+            loadRequest.AddBlindLoadRequest(BattleTechResourceType.ColorSwatch, heraldryDef.primaryMechColorID, new bool?(false));
+            loadRequest.AddBlindLoadRequest(BattleTechResourceType.ColorSwatch, heraldryDef.secondaryMechColorID, new bool?(false));
+            loadRequest.AddBlindLoadRequest(BattleTechResourceType.ColorSwatch, heraldryDef.tertiaryMechColorID, new bool?(false));
+            loadRequest.ProcessRequests(10U);
         }
 
         public static void AssignMercFactionToTeamState(this TeamOverride team, int mercFactionKey)
         {
             FactionValue factionByID = FactionEnumeration.GetFactionByID(mercFactionKey);
             team.faction = factionByID.Name;
+            ModState.HostileMercTeamDefinition.FactionValue = factionByID;
         }
 
         public static FactionValue GetFactionValueFromString(string factionID)
@@ -138,17 +165,12 @@ namespace SoldiersPiratesAssassinsMercs.Framework
 }
 
 
-//Contract.AddTeamFaction() and dictionary Contract.teamFactionIDs has faction info; dict is teamGUID [target team, etc] key, factionID (as key int) value from faction.json; bleh
 
-//prep contract is where teamFactionIDs get factions added to it (team guid, faction int)
-
-//assignFactionsToTeams is hwere targetTeam gets faction assigned to it
-
-//patch GenerateUnits and override targetTeam?
-
-
-//MC -> may need to patch AddTargetLanceWithDestroyObjectiveBatch to inject new team (possibly use target ally? and just disallow in 3 way?)
 
 // assign new AI team via TeamDefinition ExtraTeamDefinitionGuidNames so extra merc team will be added by BuildItemRegistry at contract start // will need to make a GUID and keep it consistent
 
-//will need to generate new TeamOverride and do...something with it. FACK
+// define new LanceLogic that is AddLanceToTargetTeam, but instead adds to magic merc team
+
+//MC -> may need to patch AddTargetLanceWithDestroyObjectiveBatch to inject new team
+
+//will need to generate new TeamOverride -> ModStateHostileMercLanceTeamOverride
