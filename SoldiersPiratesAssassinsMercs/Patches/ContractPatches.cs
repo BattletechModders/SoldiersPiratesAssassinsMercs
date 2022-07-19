@@ -253,9 +253,13 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 if (!__instance.Accepted) return;
                 if (Utils.ShouldReplaceOpforWithMercs(__instance.Override))
                 {
+                    var mercFaction = Utils.GetMercFactionPoolFromWeight(sim, __instance.Override.targetTeam.faction);
+                    if (mercFaction == -1)
+                    {
+                        ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] Selected MercFaction [-1], aborting. This is an error in merc faction config.");
+                        return;
+                    }
                     ModState.OriginalTargetFactionTeamOverride = __instance.Override.targetTeam.Copy();
-
-                    var mercFaction = Utils.GetMercFactionPoolFromWeight(sim);
                     var contractFactionIDsT = Traverse.Create(__instance).Field("teamFactionIDs");
                     var contractFactionIDs = new Dictionary<string, int>(contractFactionIDsT.GetValue<Dictionary<string, int>>());
                     if (contractFactionIDs.ContainsKey(__instance.Override.targetTeam.teamGuid))
@@ -284,7 +288,12 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 else if (Utils.ShouldAddMercLance(__instance.Override))
 
                 {
-                    var hostileMercLanceFaction = Utils.GetMercFactionPoolFromWeight(sim);
+                    var hostileMercLanceFaction = Utils.GetMercFactionPoolFromWeight(sim, __instance.Override.targetTeam.faction);
+                    if (hostileMercLanceFaction == -1)
+                    {
+                        ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] Selected MercFaction [-1], aborting. This is an error in merc faction config.");
+                        return;
+                    }
                     ModState.HostileMercLanceTeamOverride = new TeamOverride("ddfd570d-f9e4-42f8-b2e8-671eb1e8f43a",
                         "HostileMercenaryTeam");
                     ModState.HostileMercLanceTeamOverride.AssignMercFactionToTeamState(hostileMercLanceFaction);
@@ -305,7 +314,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
             new Type[] {typeof(DataManager), typeof(DateTime?), typeof(TagSet)})]
         public static class ContractOverride_GenerateUnits
         {
-            static bool Prepare() => false;
+            static bool Prepare() => false; // disabled, unneeded
             public static void Postfix(ContractOverride __instance, DataManager dataManager, DateTime? currentDate, TagSet companyTags)
             {
                 if (ModState.HostileMercLanceTeamOverride != null)

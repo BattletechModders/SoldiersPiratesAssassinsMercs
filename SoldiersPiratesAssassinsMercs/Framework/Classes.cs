@@ -26,17 +26,30 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 public List<string> BlacklistContractIDs = new List<string>();
                 //public float MercFactionReputationFactor = 0f; // merc faction will lose rep as function of target team rep
             }
-
             public class MercLanceAdditionConfig // will take place of "additional lance" or MC support lances
             {
                 public float BaseReplaceChance = 0f;
                 public Dictionary<string, float> FactionsReplaceOverrides = new Dictionary<string, float>(); //faction-specific values completely override base chance
                 public List<string> BlacklistContractTypes = new List<string>();
                 public List<string> BlacklistContractIDs = new List<string>();
-                public float MercFactionReputationFactor = 0f; // merc faction will lose rep as function of target team rep
+                public float MercFactionReputationFactor = 0f;
+            }
+            public class MercFactionConfigs
+            {
+                public string MercFactionName = ""; //e,g, KellHounds or RazorbackMercs
+                public int AppearanceWeight = 0; //base "weight" for selection
+                //public float AppearanceWeightRepFactor = 0f; //additional "weight" as factor of times previously faced (internal counter)
+                public List<string> EmployerBlacklist = new List<string>();
+                public int UnitRating = 0; //higher rating means less likely to take bribe to disengage or switch sides
+                public List<string> PersonalityAttributes = new List<string>();
             }
         }
-
+        public class MercDialogue //is value for dictionary where key = PersonalityAttributes
+        {
+            public List<string> Dialogue = new List<string>();
+            public int MinTimesEncountered = 0;
+            public int MaxTimesEncountered = 0;
+        }
         public class AddLanceToMercTeam : LanceLogic
         {
             public string lanceGuid;
@@ -92,7 +105,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 string contractType = MissionControl.MissionControl.Instance.CurrentContractType;
                 FactionDef faction = FactionDef.GetFactionDefByEnum(UnityGameInstance.BattleTechGame.DataManager, ModState.HostileMercLanceTeamOverride.FactionValue.Name);
                 string factionName = (faction == null) ? "UNKNOWN" : faction.Name;
-                int factionRep = (MissionControl.MissionControl.Instance.IsSkirmish()) ? 0 : UnityGameInstance.Instance.Game.Simulation.GetRawReputation(faction.FactionValue);
+                int factionRep = (MissionControl.MissionControl.Instance.IsSkirmish()) ? 0 : UnityGameInstance.Instance.Game.Simulation.GetRawReputation(faction?.FactionValue);
                 int mrbRating = (MissionControl.MissionControl.Instance.IsSkirmish()) ? 0 : UnityGameInstance.Instance.Game.Simulation.GetRawReputation(FactionEnumeration.GetMercenaryReviewBoardFactionValue());
                 int mrbLevel = (MissionControl.MissionControl.Instance.IsSkirmish()) ? 0 : UnityGameInstance.Instance.Game.Simulation.GetCurrentMRBLevel();
                 bool useElites = MissionControl.MissionControl.Instance.ShouldUseElites(faction, teamType);

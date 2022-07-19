@@ -11,13 +11,14 @@ using IRBTModUtils.Logging;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using SoldiersPiratesAssassinsMercs.Framework;
+using ModState = SoldiersPiratesAssassinsMercs.Framework.ModState;
 
 namespace SoldiersPiratesAssassinsMercs
 {
     public static class ModInit
     {
         internal static DeferringLogger modLog;
-        private static string modDir;
+        internal static string modDir;
         public static readonly Random Random = new Random();
 
         public static Settings modSettings;
@@ -49,21 +50,19 @@ namespace SoldiersPiratesAssassinsMercs
             harmony.PatchAll(Assembly.GetExecutingAssembly());
             //dump settings
             ModInit.modLog?.Info?.Write($"Settings dump: {settings}");
+            ModState.InitializeDialogueStrings();
         }
     }
     public class Settings
     {
         public bool enableDebug = false;
         public bool enableTrace = false;
-        public List<string> FactionBlacklist = new List<string>();
-        public Dictionary<string, int> FactionAppearanceWeightsByReputation =
-            new Dictionary<string, int>();
-
         public Classes.ConfigOptions.OpforReplacementConfig OpforReplacementConfig =
             new Classes.ConfigOptions.OpforReplacementConfig();
-
         public Classes.ConfigOptions.MercLanceAdditionConfig MercLanceAdditionConfig =
             new Classes.ConfigOptions.MercLanceAdditionConfig();
+        public List< Classes.ConfigOptions.MercFactionConfigs> MercFactionConfigs = new List< Classes.ConfigOptions.MercFactionConfigs>(); //merc factions need to be configd here to be used
+
         public string FallbackUnitFactionTag = ""; //probably be just "mercenaries" for BTA// faction tags are lowercase
     }
 }

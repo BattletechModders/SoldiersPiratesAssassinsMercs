@@ -26,6 +26,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         [HarmonyPatch(typeof(SGRoomController_CptQuarters), "CharacterClickedOn", new Type[] { typeof(SimGameState.SimGameCharacterType) })]
         public static class SGRoomController_CptQuarters_CharacterClickedOn
         {
+            static bool Prepare() => false; // disabled, unneeded
             public static void Prefix(SGRoomController_CptQuarters __instance, SimGameState.SimGameCharacterType characterClicked, ref bool __state)
             {
                 //ModState.InitializeMercFactionList(__instance.simState);

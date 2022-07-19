@@ -72,25 +72,19 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             }
             return result;
         }
-        public static int GetReputationMercFactionWeight(SimGameReputation repValue)
-        {
-            if (ModInit.modSettings.FactionAppearanceWeightsByReputation.ContainsKey(repValue.ToString()))
-            {
-                return ModInit.modSettings.FactionAppearanceWeightsByReputation[repValue.ToString()];
-            }
-            return 0;
-        }
-        public static int GetMercFactionPoolFromWeight(SimGameState sim)
+        
+        public static int GetMercFactionPoolFromWeight(SimGameState sim, string targetTeam)
         {
             var factionValueInt = -1;
             var factionPool = new List<int>();
-            foreach (var faction in ModState.simMercFactions)
+            foreach (var mercFaction in ModInit.modSettings.MercFactionConfigs)
             {
+                if (mercFaction.EmployerBlacklist.Contains(targetTeam)) continue;
                 ModInit.modLog?.Trace?.Write(
-                    $"[GetMercFactionPoolFromWeight] Processing reputation for Merc group: {faction}");
-                var factionValue = GetFactionValueFromString(faction);
-                var rep = sim.GetReputation(factionValue);
-                var weight = GetReputationMercFactionWeight(rep);
+                    $"[GetMercFactionPoolFromWeight] Processing weight for Merc group: {mercFaction.MercFactionName}");
+                var factionValue = GetFactionValueFromString(mercFaction.MercFactionName);
+                //var rep = sim.GetReputation(factionValue);
+                var weight = mercFaction.AppearanceWeight;
                 for (int i = 0; i < weight; i++)
                 {
                     factionPool.Add(factionValue.ID);
