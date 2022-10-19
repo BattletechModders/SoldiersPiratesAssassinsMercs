@@ -396,7 +396,6 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     }
                 }
                 else if (ModState.HostileMercLanceTeamOverride != null)
-
                 {
                     var mercFactionLowerCased = ModState.HostileMercLanceTeamOverride.FactionValue.Name.ToLower();
                     if (requiredTags.Contains(mercFactionLowerCased))
@@ -432,6 +431,8 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                         .FirstOrDefault(x =>
                             x.Value.FactionValue.Name == ModState.OriginalTargetFactionTeamOverride.FactionValue.Name)
                         .Value;
+
+                    theContract.Override.targetTeam.UpdateMercFactionStats(theSimState);
 
                     if (faction != null)
                     {
@@ -471,7 +472,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                         .FirstOrDefault(x =>
                             x.Value.FactionValue.Name == ModState.HostileMercLanceTeamOverride.FactionValue.Name)
                         .Value;
-
+                    ModState.HostileMercLanceTeamOverride.UpdateMercFactionStats(theSimState);
                     if (faction != null)
                     {
                         if (faction.FactionValue.DoesGainReputation) //TargetVsEmployer

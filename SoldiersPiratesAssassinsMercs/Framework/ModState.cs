@@ -27,6 +27,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
         public static bool ActiveContractShouldReplaceLanceWithMercs = false;
         public static TeamOverride HostileMercLanceTeamOverride = null;
         public static bool ActiveContractShouldSpawnAlliedMercs = false;
+        public static float ChosenDialogueBribeMulti = 1f;
 
        public static void InitializeMercFactionList(SimGameState sim)
        {
@@ -36,7 +37,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             {
                 if (!faction.IsRealFaction ||
                     (!faction.IsMercenary)) continue; //used to require does gain reputation, but maybe shouldnt
-                if (ModInit.modSettings.MercFactionConfigs.Any(x=>x.MercFactionName == faction.Name))
+                if (ModInit.modSettings.MercFactionConfigs.ContainsKey(faction.Name))
                 {
                     ModState.simMercFactions.Add(faction.Name);
                 }
@@ -47,7 +48,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
        {
            using (StreamReader reader = new StreamReader($"{ModInit.modDir}/Dialogue.json"))
            {
-               string jdata = reader.ReadToEnd(); //dictionary key is "personality attribute" associated with dialogue.
+               string jdata = reader.ReadToEnd(); //dictionary key is "personality attribute" associated with Dialogue.
                ModState.DialogueStrings = JsonConvert.DeserializeObject<ConcurrentDictionary<string, List<Classes.MercDialogue>>>(jdata);
                ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initializing Dialogue");
            }
@@ -62,6 +63,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
            ActiveContractShouldReplaceLanceWithMercs = false;
            HostileMercLanceTeamOverride = null;
            ActiveContractShouldSpawnAlliedMercs = false;
+           ChosenDialogueBribeMulti = 1f;
        }
     }
 }

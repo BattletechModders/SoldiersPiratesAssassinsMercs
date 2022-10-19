@@ -61,7 +61,8 @@ namespace SoldiersPiratesAssassinsMercs
             new Classes.ConfigOptions.OpforReplacementConfig();
         public Classes.ConfigOptions.MercLanceAdditionConfig MercLanceAdditionConfig =
             new Classes.ConfigOptions.MercLanceAdditionConfig();
-        public List< Classes.ConfigOptions.MercFactionConfigs> MercFactionConfigs = new List< Classes.ConfigOptions.MercFactionConfigs>(); //merc factions need to be configd here to be used
+
+        public Dictionary<string, Classes.ConfigOptions.MercFactionConfigs> MercFactionConfigs = new Dictionary<string, Classes.ConfigOptions.MercFactionConfigs>(); //merc factions need to be configd here to be used. key is Merc Name
 
         public string FallbackUnitFactionTag = ""; //probably be just "mercenaries" for BTA// faction tags are lowercase
     }

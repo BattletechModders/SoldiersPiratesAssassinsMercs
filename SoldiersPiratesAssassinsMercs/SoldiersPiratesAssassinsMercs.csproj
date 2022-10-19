@@ -75,6 +75,7 @@
     <Compile Include="Framework\Utils.cs" />
     <Compile Include="Framework\ModState.cs" />
     <Compile Include="ModInit.cs" />
+    <Compile Include="Patches\Dialogue.cs" />
     <Compile Include="Patches\MissionControlPatches.cs" />
     <Compile Include="Patches\DebugPatches.cs" />
     <Compile Include="Patches\SimGamePatches.cs" />

@@ -49,6 +49,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             public List<string> Dialogue = new List<string>();
             public int MinTimesEncountered = 0;
             public int MaxTimesEncountered = 0;
+            public float BribeAcceptanceMultiplier = 1f;
         }
         public class AddLanceToMercTeam : LanceLogic
         {
