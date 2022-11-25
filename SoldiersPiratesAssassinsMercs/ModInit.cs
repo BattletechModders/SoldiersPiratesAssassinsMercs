@@ -65,5 +65,6 @@ namespace SoldiersPiratesAssassinsMercs
         public Dictionary<string, Classes.ConfigOptions.MercFactionConfigs> MercFactionConfigs = new Dictionary<string, Classes.ConfigOptions.MercFactionConfigs>(); //merc factions need to be configd here to be used. key is Merc Name
 
         public string FallbackUnitFactionTag = ""; //probably be just "mercenaries" for BTA// faction tags are lowercase
+        public string BribeAbility = "AbilityDefAttemptBribe";
     }
 }

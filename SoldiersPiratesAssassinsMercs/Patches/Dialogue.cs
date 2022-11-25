@@ -12,6 +12,7 @@ using BattleTech.Framework;
 using BattleTech.StringInterpolation;
 using BattleTech.UI;
 using Harmony;
+using HBS;
 using HBS.Collections;
 using HBS.Math;
 using IRBTModUtils;
@@ -23,6 +24,7 @@ using MissionControl.Trigger;
 using SoldiersPiratesAssassinsMercs.Framework;
 using UIWidgets;
 using UnityEngine;
+using static BattleTech.ModSupport.Utils.AdvancedJSONMerge;
 using static DamageAssetGroup;
 using ModState = SoldiersPiratesAssassinsMercs.Framework.ModState;
 
@@ -49,6 +51,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     numFaced = ModState.HostileMercLanceTeamOverride.GetMercFactionStat(sim);
                     mercFaction = ModState.HostileMercLanceTeamOverride;
                 }
+
                 if (mercFaction == null) return;
                 if (!ModInit.modSettings.MercFactionConfigs.ContainsKey(mercFaction.FactionValue.Name)) return;
                 var DialogueID = $"Dialogue_SPAM_{mercFaction.FactionValue.Name}";
@@ -79,6 +82,139 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
                 dgl.TriggerDialogue(true);
                 ////
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(Team), "OnRoundEnd")]
+    public static class TurnActor_OnRoundEnd
+    {
+        public static void Postfix(Team __instance)
+        {
+            if (ModState.MercFactionTeamOverride != null || ModState.HostileMercLanceTeamOverride != null)
+            {
+                if (!ModState.HasBeenInCombat && __instance.IsLocalPlayer && __instance.Combat.TurnDirector.IsInterleaved)
+                {
+                    ModState.HasBeenInCombat = true;
+                }
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(Team), "OnRoundBegin")]
+    public static class TurnActor_OnRoundBegin
+    {
+        public static void Postfix(Team __instance)
+        {
+            var sim = UnityGameInstance.BattleTechGame.Simulation;
+            if (sim == null) return;
+            if (__instance.IsLocalPlayer && ModState.HasBeenInCombat && !ModState.HasBribeBeenAttempted)
+            {
+                Tuple<float, int>[] results;
+                Team mercTeam;
+                var description = Utils.CalculateBribeCostAndSuccess(__instance.Combat, out results, out mercTeam);
+                //do bribey popup thinger here
+                ModState.HasBribeBeenAttempted = true;
+                var companyFunds = sim.Funds;
+                var popup = GenericPopupBuilder
+                    .Create("Attempt to bribe hostile mercs?", description)
+                    .AddFader(new UIColorRef?(LazySingletonBehavior<UIManager>.Instance.UILookAndColorConstants
+                        .PopupBackfill));
+                popup.AlwaysOnTop = true;
+                popup.AddButton("0%", (Action)(() => { }));
+                if (results[1].Item2 < companyFunds)
+                {
+                    popup.AddButton("25%.", (Action)(() =>
+                    {
+                        var roll = Utils.ProcessBribeRoll(results[1], mercTeam);
+
+                    }));
+                }
+
+                if (results[2].Item2 < companyFunds)
+                {
+                    popup.AddButton("50%.", (Action)(() =>
+                    {
+                        var roll2 = Utils.ProcessBribeRoll(results[2], mercTeam);
+
+                    }));
+                }
+
+                if (results[3].Item2 < companyFunds)
+                {
+                    popup.AddButton("75%.", (Action)(() =>
+                    {
+                        var roll3 = Utils.ProcessBribeRoll(results[3], mercTeam);
+
+                    }));
+                }
+
+                if (results[4].Item2 < companyFunds)
+                {
+                    popup.AddButton("100%.", (Action)(() =>
+                    {
+                        var roll4 = Utils.ProcessBribeRoll(results[4], mercTeam);
+
+                    }));
+                }
+                popup.CancelOnEscape();
+                popup.Render();
+            }
+        }
+    }
+
+
+    //add bribe ability. disabled
+    [HarmonyPatch(typeof(Team), "AddUnit", new Type[] {typeof(AbstractActor)})]
+    public static class Team_AddUnit_Patch
+    {
+        static bool Prepare() => false; // disable, not doing ability?
+        public static void Postfix(Team __instance, AbstractActor unit)
+        {
+            if (ModState.MercFactionTeamOverride != null || ModState.HostileMercLanceTeamOverride != null)
+            {
+                if (__instance.IsLocalPlayer && unit.GetPilot().IsPlayerCharacter)
+                {
+                    if (!string.IsNullOrEmpty(ModInit.modSettings.BribeAbility))
+                    {
+                        if (unit.GetPilot().Abilities
+                                .All(x => x.Def.Id != ModInit.modSettings.BribeAbility) &&
+                            unit.ComponentAbilities.All(y =>
+                                y.Def.Id != ModInit.modSettings.BribeAbility))
+                        {
+                            unit.Combat.DataManager.AbilityDefs.TryGet(ModInit.modSettings.BribeAbility,
+                                out var def);
+                            var ability = new Ability(def);
+                            ModInit.modLog?.Trace?.Write(
+                                $"[Team.AddUnit] Adding {ability.Def?.Description?.Id} to {unit.Description?.Name}.");
+                            ability.Init(unit.Combat);
+                            unit.GetPilot().Abilities.Add(ability);
+                            unit.GetPilot().ActiveAbilities.Add(ability);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //maybe need to patch attackmodeselector for description?
+
+    [HarmonyPatch(typeof(Ability), "Activate",
+        new Type[] { typeof(AbstractActor), typeof(ICombatant) })]
+    public static class Ability_Activate_ICombatant
+    {
+        static bool Prepare() => false; // disable, not doing ability?
+        public static void Postfix(Ability __instance, AbstractActor creator, ICombatant target)
+        {
+            if (creator == null) return;
+            if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
+
+            if (__instance.IsAvailable)
+            {
+                if (target is AbstractActor targetActor)
+                {
+                   //do roll, spend money
+                }
             }
         }
     }

@@ -222,7 +222,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 {
                     foreach (var DialogueHolder in ModState.DialogueStrings[attribute])
                     {
-                        if (timesFaced >= DialogueHolder.MinTimesEncountered && timesFaced <= DialogueHolder.MaxTimesEncountered)
+                        if ((DialogueHolder.MinTimesEncountered == -1 || timesFaced >= DialogueHolder.MinTimesEncountered) && (DialogueHolder.MaxTimesEncountered == -1 || timesFaced <= DialogueHolder.MaxTimesEncountered))
                         {
                             DialogueBucket.Add(DialogueHolder);
                         }
@@ -232,17 +232,17 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             var chosenDialogueHolder = DialogueBucket.GetRandomElement();
             ModState.ChosenDialogueBribeMulti = chosenDialogueHolder.BribeAcceptanceMultiplier;
             var chosenDialogue = chosenDialogueHolder.Dialogue.GetRandomElement();
-            chosenDialogue.InterpolateSPAMDialogue(mercTeam, sim);
-            var interpolated = Interpolator.Interpolate(chosenDialogue, sim.Context, true);
+            var customInterpedDialogue = InterpolateSPAMDialogue(chosenDialogue, mercTeam, sim);
+            var interpolated = Interpolator.Interpolate(customInterpedDialogue, sim.Context, true);
             var contents = new DialogueContent(interpolated, Color.white, mercTeam.teamLeaderCastDefId, null, null,
                 DialogCameraDistance.Medium, DialogCameraHeight.Default, -1f);
 
-            DialogueContent[] content = Array.Empty<DialogueContent>();
-            content[0] = contents;
+            DialogueContent[] content = {contents};
+            //content[0] = contents;
             return content;
         }
 
-        public static string InterpolateSPAMDialogue(this string dialogue, TeamOverride teamOverride, SimGameState sim)
+        public static string InterpolateSPAMDialogue(string dialogue, TeamOverride teamOverride, SimGameState sim)
         {
             if (string.IsNullOrEmpty(dialogue))
             {
@@ -251,6 +251,74 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             var interp = dialogue.Replace("{RCNT_SYSTEM}", teamOverride.GetMercFactionLastSystem(sim));
             //add other interps here
             return interp;
+        }
+
+        public static string CalculateBribeCostAndSuccess(CombatGameState combat, out Tuple<float, int>[] results, out Team mercTeam)
+        {
+            results = new Tuple<float, int>[5];
+            mercTeam = new Team();
+            if (ModState.MercFactionTeamOverride != null) mercTeam = combat.Teams.First(x => x.GUID == "be77cadd-e245-4240-a93e-b99cc98902a5");
+            else if (ModState.HostileMercLanceTeamOverride != null) mercTeam = combat.Teams.First(x => x.GUID == "ddfd570d-f9e4-42f8-b2e8-671eb1e8f43a");
+            if (mercTeam != null)
+            {
+                var totalValue = 0;
+                foreach (var unit in mercTeam.units)
+                {
+                    totalValue += unit.BattleValue;
+                }
+
+                var baselineCost = totalValue * .01f * ModState.ChosenDialogueBribeMulti;
+                var baselineAcceptance = 1f; // may need to normalize based on unitrating values or some shit
+                if (ModInit.modSettings.MercFactionConfigs.ContainsKey(mercTeam.FactionValue.Name))
+                {
+                    baselineAcceptance *= (1 / (float)ModInit.modSettings.MercFactionConfigs[mercTeam.FactionValue.Name].UnitRating);
+                }
+
+                var moneyResults1 = Mathf.RoundToInt(baselineCost * .25f);
+                var moneyResults2 = Mathf.RoundToInt(baselineCost * .5f);
+                var moneyResults3 = Mathf.RoundToInt(baselineCost * 75f);
+                var moneyResults4 = Mathf.RoundToInt(baselineCost);
+
+
+                results[0] = new Tuple<float, int>(0, 0);
+                results[1] = new Tuple<float, int>(baselineAcceptance * .25f, moneyResults1);
+                results[2] = new Tuple<float, int>(baselineAcceptance * .5f, moneyResults2);
+                results[3] = new Tuple<float, int>(baselineAcceptance * .75f, moneyResults3);
+                results[4] = new Tuple<float, int>(baselineAcceptance, moneyResults4);
+
+                var bribeDescription =
+                    $"Attempt to bribe hostile mercenaries? The {mercTeam.FactionValue?.FactionDef?.Name} have a unit rating of {ModInit.modSettings.MercFactionConfigs[mercTeam.FactionValue.Name].UnitRating}" +
+                    $"\n\n0% - 0¢ (do not attempt)" +
+                    $"\n\n25% - {moneyResults1}¢" +
+                    $"\n\n50% - {moneyResults2}¢" +
+                    $"\n\n75% - {moneyResults3}¢" +
+                    $"\n\n100% - {moneyResults4}¢";
+                return bribeDescription;
+            }
+            
+            return "SHITS BROKE";
+        }
+
+        public static int ProcessBribeRoll(Tuple<float, int> mercBribe, Team mercTeam)
+        {
+            var roll = ModInit.Random.NextDouble();
+            if (roll < mercBribe.Item1)
+            {
+                if (roll <= 0.05f)
+                {
+                    //switch sides?
+                    return 2;
+                }
+                else
+                {
+                    foreach (var unit in mercTeam.units)
+                    {
+                        
+                    }
+                    return 1;
+                }
+            }
+            return 0;
         }
     }
 }

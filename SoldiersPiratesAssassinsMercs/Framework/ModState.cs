@@ -27,7 +27,13 @@ namespace SoldiersPiratesAssassinsMercs.Framework
         public static bool ActiveContractShouldReplaceLanceWithMercs = false;
         public static TeamOverride HostileMercLanceTeamOverride = null;
         public static bool ActiveContractShouldSpawnAlliedMercs = false;
-        public static float ChosenDialogueBribeMulti = 1f;
+        public static float ChosenDialogueBribeMulti = 1f; //just use this as trigger for popup if !=0
+
+        public static bool HasBeenInCombat = false;
+        public static bool HasBribeBeenAttempted = false;
+
+        public static int BribeSuccess = 0;
+        //public static bool QueueBribePopup = false;
 
        public static void InitializeMercFactionList(SimGameState sim)
        {
@@ -52,6 +58,15 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                ModState.DialogueStrings = JsonConvert.DeserializeObject<ConcurrentDictionary<string, List<Classes.MercDialogue>>>(jdata);
                ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initializing Dialogue");
            }
+
+           foreach (var stringconfig in ModState.DialogueStrings)
+           {
+               ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initialized Dialogue for attribute {stringconfig.Key}");
+               foreach (var config in stringconfig.Value)
+               {
+                   ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initialized Dialogue {string.Join("; ", config.Dialogue)}");
+                }
+           }
        }
 
        public static void ResetStateAfterContract()
@@ -64,6 +79,10 @@ namespace SoldiersPiratesAssassinsMercs.Framework
            HostileMercLanceTeamOverride = null;
            ActiveContractShouldSpawnAlliedMercs = false;
            ChosenDialogueBribeMulti = 1f;
+           HasBeenInCombat = false;
+           HasBribeBeenAttempted = false;
+           BribeSuccess = 0;
+           //QueueBribePopup = false;
        }
     }
 }
