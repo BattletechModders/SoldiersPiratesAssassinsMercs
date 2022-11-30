@@ -17,7 +17,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
         //these stay through play session
         public static List<string> simDisplayedFactions = new List<string>();
         public static List<string> simMercFactions = new List<string>();
-        public static ConcurrentDictionary<string, List<Classes.MercDialogue>> DialogueStrings = new ConcurrentDictionary<string, List<Classes.MercDialogue>>();
+        public static ConcurrentDictionary<string, List<Classes.MercDialogueBucket>> DialogueStrings = new ConcurrentDictionary<string, List<Classes.MercDialogueBucket>>();
 
         //reset these after contract
         public static TeamDefinition HostileMercTeamDefinition = new TeamDefinition("ddfd570d-f9e4-42f8-b2e8-671eb1e8f43a", "HostileMercenaryTeam");
@@ -27,7 +27,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
         public static bool ActiveContractShouldReplaceLanceWithMercs = false;
         public static TeamOverride HostileMercLanceTeamOverride = null;
         public static bool ActiveContractShouldSpawnAlliedMercs = false;
-        public static Classes.MercDialogue ChosenDialogue = new Classes.MercDialogue();
+        public static Classes.MercDialogueBucket ChosenDialogue = new Classes.MercDialogueBucket();
 
         public static int RoundsInCombat = 0;
         public static bool HasBribeBeenAttempted = false;
@@ -55,7 +55,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
            using (StreamReader reader = new StreamReader($"{ModInit.modDir}/Dialogue.json"))
            {
                string jdata = reader.ReadToEnd(); //dictionary key is "personality attribute" associated with Dialogue.
-               ModState.DialogueStrings = JsonConvert.DeserializeObject<ConcurrentDictionary<string, List<Classes.MercDialogue>>>(jdata);
+               ModState.DialogueStrings = JsonConvert.DeserializeObject<ConcurrentDictionary<string, List<Classes.MercDialogueBucket>>>(jdata);
                ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initializing Dialogue");
            }
 
@@ -78,7 +78,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
            ActiveContractShouldReplaceLanceWithMercs = false;
            HostileMercLanceTeamOverride = null;
            ActiveContractShouldSpawnAlliedMercs = false;
-           ChosenDialogue = new Classes.MercDialogue();
+           ChosenDialogue = new Classes.MercDialogueBucket();
            RoundsInCombat = 0;
            HasBribeBeenAttempted = false;
            BribeSuccess = 0;

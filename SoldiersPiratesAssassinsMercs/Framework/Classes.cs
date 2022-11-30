@@ -44,7 +44,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 public List<string> PersonalityAttributes = new List<string>();
             }
         }
-        public class MercDialogue //is value for dictionary where key = PersonalityAttributes
+        public class MercDialogueBucket //is value for dictionary where key = PersonalityAttributes
         {
             public List<string> Dialogue = new List<string>();
             //public List<string> BribeCriticalSuccessDialogue = new List<string>();

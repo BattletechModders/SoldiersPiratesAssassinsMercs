@@ -228,7 +228,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
         {
             var combat = UnityGameInstance.BattleTechGame.Combat;
             var config = ModInit.modSettings.MercFactionConfigs[mercTeamOverride.FactionValue.Name];
-            var dialogueBucket = new List<Classes.MercDialogue>();
+            var dialogueBucketBin = new List<Classes.MercDialogueBucket>();
             foreach (var attribute in config.PersonalityAttributes)
             {
                 if (ModState.DialogueStrings.ContainsKey(attribute))
@@ -237,20 +237,20 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                     {
                         if ((dialogueHolder.MinTimesEncountered == -1 || timesFaced >= dialogueHolder.MinTimesEncountered) && (dialogueHolder.MaxTimesEncountered == -1 || timesFaced <= dialogueHolder.MaxTimesEncountered))
                         {
-                            dialogueBucket.Add(dialogueHolder);
+                            dialogueBucketBin.Add(dialogueHolder);
                         }
                     }
                 }
             }
-            var chosenDialogueHolder = dialogueBucket.GetRandomElement();
-            ModState.ChosenDialogue = chosenDialogueHolder;
-            var chosenDialogue = chosenDialogueHolder.Dialogue.GetRandomElement();
+            var chosenDialogueBucket = dialogueBucketBin.GetRandomElement();
+            ModState.ChosenDialogue = chosenDialogueBucket;
+            var chosenDialogue = chosenDialogueBucket.Dialogue.GetRandomElement();
             var customInterpedDialogue = InterpolateSPAMDialogue(chosenDialogue, mercTeamOverride, sim);
             var interpolated = Interpolator.Interpolate(customInterpedDialogue, sim.Context, true);
             var quips = new List<string> {interpolated};
             
             CastDef castDef = Coordinator.CreateCast(combat, Guid.NewGuid().ToString(), mercTeam);
-            DialogueContent content = BuildContent(castDef, quips);
+            DialogueContent content = BuildContent(mercTeamOverride, castDef, quips);
             //var contents = new DialogueContent(interpolated, Color.white, mercTeamOverride.teamLeaderCastDefId, null, null,
             //    DialogCameraDistance.Medium, DialogCameraHeight.Default, -1f);
             //Traverse.Create(contents).Field("castDef").SetValue(castDef);
@@ -349,6 +349,8 @@ namespace SoldiersPiratesAssassinsMercs.Framework
 
         public static int ProcessBribeRoll(Tuple<float, int> mercBribe, Team mercTeam)
         {
+            var teamOverride = ModState.HostileMercLanceTeamOverride;
+            if (teamOverride == null) return 0;
             var roll = ModInit.Random.NextDouble();
             var sim = UnityGameInstance.BattleTechGame.Simulation;
             var combat = UnityGameInstance.BattleTechGame.Combat;
@@ -406,7 +408,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                     LazySingletonBehavior<FogOfWarView>.Instance.FowSystem.Rebuild();
                     combat.RebuildAllLists();
                     playerSupportTeam.RebuildVisibilityCacheAllUnits(combat.GetAllLivingCombatants());
-                    PlayBribeResult(mercTeam.Combat, Guid.NewGuid().ToString(), mercTeam, 2);
+                    PlayBribeResult(mercTeam.Combat, Guid.NewGuid().ToString(), teamOverride, mercTeam, 2);
                     sim.AddFunds(-mercBribe.Item2, null, false);
                     return 2;
                 }
@@ -418,18 +420,18 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                         var msg = new DespawnActorMessage(EncounterLayerData.MapLogicGuid, unit.GUID, (DeathMethod)DespawnFloatieMessage.Escaped);
                         Utils._despawnActorMethod.Invoke(unit, new object[] { msg });
                     }
-                    PlayBribeResult(mercTeam.Combat, Guid.NewGuid().ToString(), mercTeam, 1);
+                    PlayBribeResult(mercTeam.Combat, Guid.NewGuid().ToString(), teamOverride, mercTeam, 1);
                     sim.AddFunds(-mercBribe.Item2, null, false);
                     return 1;
                 }
             }
             ModInit.modLog?.Trace?.Write($"[ProcessBribeRoll] Bribe failure! Doing nothing.");
-            PlayBribeResult(mercTeam.Combat, Guid.NewGuid().ToString(), mercTeam, 0);
+            PlayBribeResult(mercTeam.Combat, Guid.NewGuid().ToString(), teamOverride, mercTeam, 0);
             sim.AddFunds(-Mathf.RoundToInt(mercBribe.Item2 * .5f), null, false);
             return 0;
         }
 
-        public static void PlayBribeResult(CombatGameState combat, string sourceGUID, Team team, int success, float showDuration = 3)
+        public static void PlayBribeResult(CombatGameState combat, string sourceGUID, TeamOverride teamOverride, Team team, int success, float showDuration = 3)
         {
             CastDef castDef = Coordinator.CreateCast(combat, sourceGUID, team);
             List<string> quips;
@@ -445,14 +447,16 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                     quips = ModState.ChosenDialogue.BribeFailureDialogue;
                     break;
             }
-            DialogueContent content = BuildContent(castDef, quips);
+            DialogueContent content = BuildContent(teamOverride, castDef, quips);
             combat.MessageCenter.PublishMessage(new CustomDialogMessage(sourceGUID, content, showDuration));
         }
 
-        private static DialogueContent BuildContent(CastDef castDef, List<string> quips)
+        private static DialogueContent BuildContent(TeamOverride teamOverride, CastDef castDef, List<string> quips)
         {
+            var sim = UnityGameInstance.BattleTechGame.Simulation;
             string quip = quips.GetRandomElement();
-            string localizedQuip = new Localize.Text(quip).ToString();
+            string quipInterpolated = InterpolateSPAMDialogue(quip, teamOverride, sim);
+            string localizedQuip = new Localize.Text(quipInterpolated).ToString();
             return Coordinator.BuildDialogueContent(castDef, localizedQuip, Color.white);
         }
     }
