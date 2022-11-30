@@ -48,10 +48,10 @@ mod.json settings:
 
 `OpforReplacementConfig` and `MercLanceAdditionConfig` - configs for whole-opfor and MC AdditionalLances faction replacement, respectively.
 
-* BaseReplaceChance - baseline chance for any opfor to be replaced by a valid merc faction. uses 0 - 1 range; 0 is never, 1 is guaranteed.
-* FactionsReplaceOverrides - list of faction-specific overrides for the replacement chance. i.e, override Locals and Wobbies to hire mercs more often and override clans to never use them. uses 0 - 1 range; 0 is never, 1 is guaranteed.
-* BlacklistContractTypes and BlacklistContractIDs - lists of contract types and specific contract IDs which will never replace opfor with mercs.
-* MercFactionReputationFactor (in MercLanceAdditionConfig only) - custom reputation loss multiplier for hostile merc faction when they only replaced MC AdditionalLances (rep loss for original target faction is always maintained, and when whole opfor is replaced by mercs, both merc faction and contract target faction lose rep as normal). Mercenary faction reputation isn't hooked to anything besides regular rep system, but its there if you need it.
+* `BaseReplaceChance` - baseline chance for any opfor to be replaced by a valid merc faction. uses 0 - 1 range; 0 is never, 1 is guaranteed.
+* `FactionsReplaceOverrides` - list of faction-specific overrides for the replacement chance. i.e, override Locals and Wobbies to hire mercs more often and override clans to never use them. uses 0 - 1 range; 0 is never, 1 is guaranteed.
+* `BlacklistContractTypes` and `BlacklistContractIDs` - lists of contract types and specific contract IDs which will never replace opfor with mercs.
+* `MercFactionReputationFactor` (in MercLanceAdditionConfig only) - custom reputation loss multiplier for hostile merc faction when they only replaced MC AdditionalLances (rep loss for original target faction is always maintained, and when whole opfor is replaced by mercs, both merc faction and contract target faction lose rep as normal). Mercenary faction reputation isn't hooked to anything besides regular rep system, but its there if you need it.
  
  
  `MercFactionConfigs` - Dictionary of configs for Merc Faction behavior. Merc factions *must* be real, valid factions. They have to have a FactionDef, and be defined in Faction.json. In particular, Faction.json must have them with IsRealFaction and IsMercenary set to true. They do *not* have to be set to gain reputation, nor do they need to be IsCareerStartingDisplayFaction and display in the Cpt Quarters reputation screen.
