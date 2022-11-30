@@ -48,21 +48,21 @@ mod.json settings:
 
 `OpforReplacementConfig` and `MercLanceAdditionConfig` - configs for whole-opfor and MC AdditionalLances faction replacement, respectively.
 
-	* BaseReplaceChance - baseline chance for any opfor to be replaced by a valid merc faction. uses 0 - 1 range; 0 is never, 1 is guaranteed.
-	* FactionsReplaceOverrides - list of faction-specific overrides for the replacement chance. i.e, override Locals and Wobbies to hire mercs more often and override clans to never use them. uses 0 - 1 range; 0 is never, 1 is guaranteed.
-	* BlacklistContractTypes and BlacklistContractIDs - lists of contract types and specific contract IDs which will never replace opfor with mercs.
-	* MercFactionReputationFactor (in MercLanceAdditionConfig only) - custom reputation loss multiplier for hostile merc faction when they only replaced MC AdditionalLances (rep loss for original target faction is always maintained, and when whole opfor is replaced by mercs, both merc faction and contract target faction lose rep as normal). Mercenary faction reputation isn't hooked to anything besides regular rep system, but its there if you need it.
+* BaseReplaceChance - baseline chance for any opfor to be replaced by a valid merc faction. uses 0 - 1 range; 0 is never, 1 is guaranteed.
+* FactionsReplaceOverrides - list of faction-specific overrides for the replacement chance. i.e, override Locals and Wobbies to hire mercs more often and override clans to never use them. uses 0 - 1 range; 0 is never, 1 is guaranteed.
+* BlacklistContractTypes and BlacklistContractIDs - lists of contract types and specific contract IDs which will never replace opfor with mercs.
+* MercFactionReputationFactor (in MercLanceAdditionConfig only) - custom reputation loss multiplier for hostile merc faction when they only replaced MC AdditionalLances (rep loss for original target faction is always maintained, and when whole opfor is replaced by mercs, both merc faction and contract target faction lose rep as normal). Mercenary faction reputation isn't hooked to anything besides regular rep system, but its there if you need it.
  
  
  `MercFactionConfigs` - Dictionary of configs for Merc Faction behavior. Merc factions *must* be real, valid factions. They have to have a FactionDef, and be defined in Faction.json. In particular, Faction.json must have them with IsRealFaction and IsMercenary set to true. They do *not* have to be set to gain reputation, nor do they need to be IsCareerStartingDisplayFaction and display in the Cpt Quarters reputation screen.
  
  The KEYS for this dictionary are the faction Names for the configured merc factions, i.e KellHounds (same field as Liao, Davion, Locals, etc). If a merc faction exists but is missing from this dictionary, it will not be used by SPAM!:
  
-	* MercFactionName - string, should be same as the KEY; the faction Name.
-	* AppearanceWeight - integer weight for this merc faction to be used for replacement (relative to other configured merc factions)
-	* EmployerBlacklist - list, strings; "employer" blacklist for merc faction. I.e KellHounds will never replace (be hired) by Liao.
-	* UnitRating - integer MRB unit rating for the merc faction. Calculates based on a 13 point system, as MRB ratings are given as an A+ through D- scale. We've added an F for NotRated. Merc Units that are NotRated get a 1, D- gets 2, A+ gets 13.
-	* PersonalityAttributes - list of PersonalityAttributes that will determine the "pool" of randomly generated dialogue pulled from the Dialogue.json
+* MercFactionName - string, should be same as the KEY; the faction Name.
+* AppearanceWeight - integer weight for this merc faction to be used for replacement (relative to other configured merc factions)
+* EmployerBlacklist - list, strings; "employer" blacklist for merc faction. I.e KellHounds will never replace (be hired) by Liao.
+* UnitRating - integer MRB unit rating for the merc faction. Calculates based on a 13 point system, as MRB ratings are given as an A+ through D- scale. We've added an F for NotRated. Merc Units that are NotRated get a 1, D- gets 2, A+ gets 13.
+* PersonalityAttributes - list of PersonalityAttributes that will determine the "pool" of randomly generated dialogue pulled from the Dialogue.json
 
 `FallbackUnitFactionTag` - fallback unit tag to use if the unit replacer cannot find a unit that matches the lance/unit selector tag for the chosen merc faction. Best to use your most "generic" mercenary faction tag, but de-capitalized. Really just to prevent fallback cicadas while hopefully still being merc-ey.
 
