@@ -40,7 +40,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 public int AppearanceWeight = 0; //base "weight" for selection
                 //public float AppearanceWeightRepFactor = 0f; //additional "weight" as factor of times previously faced (internal counter)
                 public List<string> EmployerBlacklist = new List<string>();
-                public float UnitRating = 0; //higher rating means less likely to take bribe to disengage or switch sides
+                public float UnitRating = 1; //higher rating means less likely to take bribe to disengage or switch sides
                 public List<string> PersonalityAttributes = new List<string>();
             }
         }

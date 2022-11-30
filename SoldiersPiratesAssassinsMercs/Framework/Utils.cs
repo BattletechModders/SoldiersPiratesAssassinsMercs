@@ -291,19 +291,10 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 if (ModInit.modSettings.MercFactionConfigs.ContainsKey(mercTeam.FactionValue.Name))
                 {
                     var mercRep = ModInit.modSettings.MercFactionConfigs[mercTeam.FactionValue.Name].UnitRating;
-                    if (playerRep > 0 && mercRep > 0)
-                    {
-                        baselineAcceptance *= (playerRep / mercRep);
-                    }
-                    else if (playerRep > 0 && mercRep <= 0)
-                    {
-                        baselineAcceptance *= playerRep;
-                    }
-                    else if (playerRep <= 0 && mercRep > 0)
-                    {
-                        baselineAcceptance /= mercRep;
-                    }
-
+                    if (mercRep == 0) mercRep = 1;
+                    if (playerRep == 0) playerRep = 1;
+                    baselineAcceptance *= (playerRep / mercRep);
+                    
                     ModInit.modLog?.Trace?.Write($"[CalculateBribeCostAndSuccess] Player MRB rep {playerRep} vs mercRep {mercRep}, baseline acceptance calcd as {baselineAcceptance}.");
                 }
                 ModInit.modLog?.Trace?.Write($"[CalculateBribeCostAndSuccess] Total Lance Cost: {totalValue}, bribe calculated  as {baselineCost} from multiplier {ModInit.modSettings.BribeCostBaselineMulti}.");
@@ -341,7 +332,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
         public static int FetchNormalizedPlayerMRBRep()
         {
             var sim = UnityGameInstance.BattleTechGame.Simulation;
-            if (sim == null) return 0;
+            if (sim == null) return 1;
             var rawRating = sim.GetCareerMRBRating();
             var rawProportion = rawRating / sim.Constants.Story.MRBRepMaxCap;
             return Mathf.RoundToInt(rawProportion * 13f);

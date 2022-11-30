@@ -256,7 +256,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     var mercFaction = Utils.GetMercFactionPoolFromWeight(sim, __instance.Override.targetTeam.faction);
                     if (mercFaction == -1)
                     {
-                        ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] Selected MercFaction [-1], aborting. This is an error in merc faction config.");
+                        ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] Selected MercFaction [-1], aborting. No valid merc factions for employer, probably.");
                         return;
                     }
                     ModState.OriginalTargetFactionTeamOverride = __instance.Override.targetTeam.Copy();
@@ -291,7 +291,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     var hostileMercLanceFaction = Utils.GetMercFactionPoolFromWeight(sim, __instance.Override.targetTeam.faction);
                     if (hostileMercLanceFaction == -1)
                     {
-                        ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] Selected MercFaction [-1], aborting. This is an error in merc faction config.");
+                        ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] Selected MercFaction [-1], aborting. No valid merc factions for employer, probably.");
                         return;
                     }
                     ModState.HostileMercLanceTeamOverride = new TeamOverride("ddfd570d-f9e4-42f8-b2e8-671eb1e8f43a",
