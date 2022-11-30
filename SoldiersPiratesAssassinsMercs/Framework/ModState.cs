@@ -27,9 +27,9 @@ namespace SoldiersPiratesAssassinsMercs.Framework
         public static bool ActiveContractShouldReplaceLanceWithMercs = false;
         public static TeamOverride HostileMercLanceTeamOverride = null;
         public static bool ActiveContractShouldSpawnAlliedMercs = false;
-        public static float ChosenDialogueBribeMulti = 1f; //just use this as trigger for popup if !=0
+        public static Classes.MercDialogue ChosenDialogue = new Classes.MercDialogue();
 
-        public static bool HasBeenInCombat = false;
+        public static int RoundsInCombat = 0;
         public static bool HasBribeBeenAttempted = false;
 
         public static int BribeSuccess = 0;
@@ -78,8 +78,8 @@ namespace SoldiersPiratesAssassinsMercs.Framework
            ActiveContractShouldReplaceLanceWithMercs = false;
            HostileMercLanceTeamOverride = null;
            ActiveContractShouldSpawnAlliedMercs = false;
-           ChosenDialogueBribeMulti = 1f;
-           HasBeenInCombat = false;
+           ChosenDialogue = new Classes.MercDialogue();
+           RoundsInCombat = 0;
            HasBribeBeenAttempted = false;
            BribeSuccess = 0;
            //QueueBribePopup = false;

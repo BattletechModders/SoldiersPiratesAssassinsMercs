@@ -41,22 +41,25 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 if (sim == null) return;
                 var numFaced = 0;
                 TeamOverride mercFaction = null;
+                Team mercTeam = null;
                 if (ModState.MercFactionTeamOverride != null)
                 {
                     numFaced = ModState.MercFactionTeamOverride.GetMercFactionStat(sim);
                     mercFaction = ModState.MercFactionTeamOverride;
+                    mercTeam = __instance.Combat.Teams.First(x => x.GUID == "be77cadd-e245-4240-a93e-b99cc98902a5");
                 }
                 else if (ModState.HostileMercLanceTeamOverride != null)
                 {
                     numFaced = ModState.HostileMercLanceTeamOverride.GetMercFactionStat(sim);
                     mercFaction = ModState.HostileMercLanceTeamOverride;
+                    mercTeam = __instance.Combat.Teams.First(x => x.GUID == "ddfd570d-f9e4-42f8-b2e8-671eb1e8f43a");
                 }
 
                 if (mercFaction == null) return;
                 if (!ModInit.modSettings.MercFactionConfigs.ContainsKey(mercFaction.FactionValue.Name)) return;
                 var DialogueID = $"Dialogue_SPAM_{mercFaction.FactionValue.Name}";
                 //just copypaste from BlueWinds' EDM because she da bomb
-                var dialogue = mercFaction.FetchMercDialogue(numFaced, sim);
+                var dialogue = mercFaction.FetchMercDialogue(mercTeam, numFaced, sim);
 
                 ModInit.modLog.Info?.Write($"[TurnDirector_QueuePilotChatter] Displaying {DialogueID}");
 
@@ -91,24 +94,25 @@ namespace SoldiersPiratesAssassinsMercs.Patches
     {
         public static void Postfix(Team __instance)
         {
-            if (ModState.MercFactionTeamOverride != null || ModState.HostileMercLanceTeamOverride != null)
+            if (ModState.HostileMercLanceTeamOverride != null)
             {
-                if (!ModState.HasBeenInCombat && __instance.IsLocalPlayer && __instance.Combat.TurnDirector.IsInterleaved)
+                if (ModState.RoundsInCombat <= 1 && __instance.IsLocalPlayer && __instance.Combat.TurnDirector.IsInterleaved)
                 {
-                    ModState.HasBeenInCombat = true;
+                    ModState.RoundsInCombat++;
+                    ModInit.modLog.Info?.Write($"[TurnActor_OnRoundEnd] Incremented rounds in combat. Now {ModState.RoundsInCombat}");
                 }
             }
         }
     }
 
-    [HarmonyPatch(typeof(Team), "OnRoundBegin")]
-    public static class TurnActor_OnRoundBegin
+    [HarmonyPatch(typeof(TurnDirector), "IncrementActiveTurnActor")]
+    public static class TurnDirector_IncrementActiveTurnActor
     {
-        public static void Postfix(Team __instance)
+        public static void Postfix(TurnDirector __instance)
         {
             var sim = UnityGameInstance.BattleTechGame.Simulation;
             if (sim == null) return;
-            if (__instance.IsLocalPlayer && ModState.HasBeenInCombat && !ModState.HasBribeBeenAttempted)
+            if (__instance.ActiveTurnActor is Team team && team.IsLocalPlayer && ModState.RoundsInCombat > 1 && !ModState.HasBribeBeenAttempted)
             {
                 Tuple<float, int>[] results;
                 Team mercTeam;

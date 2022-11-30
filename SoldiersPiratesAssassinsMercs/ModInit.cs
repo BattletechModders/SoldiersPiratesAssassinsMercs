@@ -65,6 +65,9 @@ namespace SoldiersPiratesAssassinsMercs
         public Dictionary<string, Classes.ConfigOptions.MercFactionConfigs> MercFactionConfigs = new Dictionary<string, Classes.ConfigOptions.MercFactionConfigs>(); //merc factions need to be configd here to be used. key is Merc Name
 
         public string FallbackUnitFactionTag = ""; //probably be just "mercenaries" for BTA// faction tags are lowercase
+
+        public float BribeCostBaselineMulti = 0.01f; //default to 1% of total opfor lance value (uses "BV" calculation)
+        // deprecated, but left in for disabled code
         public string BribeAbility = "AbilityDefAttemptBribe";
     }
 }

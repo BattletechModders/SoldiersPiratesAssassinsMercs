@@ -40,13 +40,16 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 public int AppearanceWeight = 0; //base "weight" for selection
                 //public float AppearanceWeightRepFactor = 0f; //additional "weight" as factor of times previously faced (internal counter)
                 public List<string> EmployerBlacklist = new List<string>();
-                public int UnitRating = 0; //higher rating means less likely to take bribe to disengage or switch sides
+                public float UnitRating = 0; //higher rating means less likely to take bribe to disengage or switch sides
                 public List<string> PersonalityAttributes = new List<string>();
             }
         }
         public class MercDialogue //is value for dictionary where key = PersonalityAttributes
         {
             public List<string> Dialogue = new List<string>();
+            //public List<string> BribeCriticalSuccessDialogue = new List<string>();
+            public List<string> BribeSuccessDialogue = new List<string>();
+            public List<string> BribeFailureDialogue = new List<string>();
             public int MinTimesEncountered = 0;
             public int MaxTimesEncountered = 0;
             public float BribeAcceptanceMultiplier = 1f;

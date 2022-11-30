@@ -16,10 +16,10 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 {
     public class MissionControlPatches
     {
-        [HarmonyPatch(typeof(AddTargetLanceWithDestroyObjectiveBatch), MethodType.Constructor, new Type[] { typeof(EncounterRules), typeof(string), typeof(SceneManipulationLogic.LookDirection), typeof(float), typeof(float), typeof(string), typeof(int), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(MLanceOverride) })]
+        [HarmonyPatch(typeof(AddTargetLanceWithDestroyObjectiveBatch), MethodType.Constructor, new Type[] { typeof(EncounterRules), typeof(string), typeof(SceneManipulationLogic.LookDirection), typeof(float), typeof(float), typeof(string), typeof(int), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(List<string>), typeof(MLanceOverride) })]
         public static class AddTargetLanceWithDestroyObjectiveBatch_Constructor
         {
-            public static bool Prefix(AddTargetLanceWithDestroyObjectiveBatch __instance, EncounterRules encounterRules, string orientationTargetKey, SceneManipulationLogic.LookDirection lookDirection, float mustBeBeyondDistance, float mustBeWithinDistance, string objectiveName, int priority, bool isPrimaryObjective, bool displayToUser, bool showObjectiveOnLanceDetected, bool excludeFromAutocomplete, MLanceOverride manuallySpecifiedLance = null)
+            public static bool Prefix(AddTargetLanceWithDestroyObjectiveBatch __instance, EncounterRules encounterRules, string orientationTargetKey, SceneManipulationLogic.LookDirection lookDirection, float mustBeBeyondDistance, float mustBeWithinDistance, string objectiveName, int priority, bool isPrimaryObjective, bool displayToUser, bool showObjectiveOnLanceDetected, bool excludeFromAutocomplete, List<string> lanceTags, MLanceOverride manuallySpecifiedLance = null)
             {
                 if (!ModState.ActiveContractShouldReplaceLanceWithMercs) return true;
                 ModInit.modLog?.Debug?.Write($"[AddTargetLanceWithDestroyObjectiveBatch_Constructor] Running SPAM for AddLanceToMercTeam. Contract should be spawning support lances?");
@@ -33,7 +33,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
                 encounterRules.EncounterLogic.Add(new Classes.AddLanceToMercTeam(lanceGuid, unitGuids, manuallySpecifiedLance));
                 encounterRules.EncounterLogic.Add(new AddDestroyWholeUnitChunk(encounterRules, targetTeamGuid, lanceGuid, unitGuids,
-                    spawnerName, objectiveGuid, objectiveName, priority, isPrimaryObjective, displayToUser));
+                    spawnerName, objectiveGuid, objectiveName, priority, isPrimaryObjective, displayToUser, lanceTags));
                 if (!excludeFromAutocomplete) encounterRules.EncounterLogic.Add(new AddObjectiveToAutocompleteTrigger(objectiveGuid));
                 encounterRules.EncounterLogic.Add(new SpawnLanceMembersAroundTarget(encounterRules, spawnerName, orientationTargetKey,
                     SpawnLogic.LookDirection.AWAY_FROM_TARGET, mustBeBeyondDistance, mustBeWithinDistance));
