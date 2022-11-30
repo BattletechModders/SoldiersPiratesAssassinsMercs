@@ -353,13 +353,13 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 if (ModState.ActiveContractShouldReplaceLanceWithMercs && __result.All(x => x.GUID != ModState.HostileMercTeamDefinition.GUID))
                 {
                     __result.Add(ModState.HostileMercTeamDefinition);
-                    ModInit.modLog?.Debug?.Write($"[TeamDefinition_CreateNewTeamDefinitionList] Added HostileMercTeamDefinition with GUID {ModState.HostileMercTeamDefinition.GUID}.");
+                    ModInit.modLog?.Trace?.Write($"[TeamDefinition_CreateNewTeamDefinitionList] Added HostileMercTeamDefinition with GUID {ModState.HostileMercTeamDefinition.GUID}.");
                 }
 
                 if (ModState.ActiveContractShouldSpawnAlliedMercs && __result.All(x => x.GUID != ModState.FriendlyMercTeamDefinition.GUID))
                 {
                     __result.Add(ModState.FriendlyMercTeamDefinition);
-                    ModInit.modLog?.Debug?.Write($"[TeamDefinition_CreateNewTeamDefinitionList] Added FriendlyMercTeamDefinition with GUID {ModState.FriendlyMercTeamDefinition.GUID}.");
+                    ModInit.modLog?.Trace?.Write($"[TeamDefinition_CreateNewTeamDefinitionList] Added FriendlyMercTeamDefinition with GUID {ModState.FriendlyMercTeamDefinition.GUID}.");
                 }
             }
         }

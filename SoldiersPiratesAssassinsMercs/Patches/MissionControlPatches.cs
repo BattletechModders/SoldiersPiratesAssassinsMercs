@@ -22,7 +22,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
             public static bool Prefix(AddTargetLanceWithDestroyObjectiveBatch __instance, EncounterRules encounterRules, string orientationTargetKey, SceneManipulationLogic.LookDirection lookDirection, float mustBeBeyondDistance, float mustBeWithinDistance, string objectiveName, int priority, bool isPrimaryObjective, bool displayToUser, bool showObjectiveOnLanceDetected, bool excludeFromAutocomplete, List<string> lanceTags, MLanceOverride manuallySpecifiedLance = null)
             {
                 if (!ModState.ActiveContractShouldReplaceLanceWithMercs) return true;
-                ModInit.modLog?.Debug?.Write($"[AddTargetLanceWithDestroyObjectiveBatch_Constructor] Running SPAM for AddLanceToMercTeam. Contract should be spawning support lances?");
+                ModInit.modLog?.Trace?.Write($"[AddTargetLanceWithDestroyObjectiveBatch_Constructor] Running SPAM for AddLanceToMercTeam. Contract should be spawning support lances?");
                 int numberOfUnitsInLance = 4;
                 string lanceGuid = Guid.NewGuid().ToString();
                 //string contractObjectiveGuid = Guid.NewGuid().ToString(); //unused
