@@ -116,7 +116,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
             {
                 Tuple<float, int>[] results;
                 Team mercTeam;
-                var description = Utils.CalculateBribeCostAndSuccess(__instance.Combat, out results, out mercTeam);
+                var description = Utils.CalculateBribeCostAndSuccess(sim, __instance.Combat, out results, out mercTeam);
                 //do bribey popup thinger here
                 ModState.HasBribeBeenAttempted = true;
                 var companyFunds = sim.Funds;

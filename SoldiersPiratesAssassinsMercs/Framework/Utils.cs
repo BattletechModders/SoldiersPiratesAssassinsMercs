@@ -270,7 +270,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             return interp;
         }
 
-        public static string CalculateBribeCostAndSuccess(CombatGameState combat, out Tuple<float, int>[] results, out Team mercTeam)
+        public static string CalculateBribeCostAndSuccess(SimGameState sim, CombatGameState combat, out Tuple<float, int>[] results, out Team mercTeam)
         {
             results = new Tuple<float, int>[5];
             mercTeam = new Team();
@@ -317,7 +317,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 var resultsPerCent4 = Mathf.RoundToInt(results[4].Item1 * 100f);
 
                 var bribeDescription =
-                    $"The {mercTeam.FactionValue?.FactionDef?.Name} have a unit rating of {ModInit.modSettings.MercFactionConfigs[mercTeam.FactionValue.Name].UnitRating}. Spreadsheet warrior that he is, Darius has calculated that they have the following chances of accepting a bribe. Attempting to bribe will send half the money upfront, with the other half wired on acceptance." +
+                    $"The {mercTeam.FactionValue?.FactionDef?.Name} have a unit rating of {ModInit.modSettings.MercFactionConfigs[mercTeam.FactionValue.Name].UnitRating}. Spreadsheet warrior that he is, Darius has calculated that they have the following chances of accepting a bribe. Attempting to bribe will send half the money upfront, with the other half wired on acceptance. You currently have {sim.Funds} c-bills." +
                     $"\n\n0% funding - 0¢ (0% chance of success)" +
                     $"\n\n25% funding - {moneyResults1}¢ Total. ({resultsPerCent1}% chance of success)" +
                     $"\n\n50% funding - {moneyResults2}¢ Total. ({resultsPerCent2}% chance of success)" +
