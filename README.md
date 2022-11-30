@@ -125,10 +125,10 @@ Example Dialogue.json:
 
 `Dialogue` - list of strings from which contract start dialogue will be randomly chosen at random. This dialogue will be interpolated using the same magic as event text so `{COMPANY.CompanyName}` will be replaced with the actual company name, etc. In addition, `{RCNT_SYSTEM}` will be replaced with the most recent star system where you faced this merc faction. Don't fuck up and put `{RCNT_SYSTEM}` in a dialogue bucket that doesn't have `MinTimesEncountered` > 0 because it'll just return an empty string.
 
-* BribeSuccessDialogue - list of strings from which dialogue is randomly chosen when a bribe attempt is successsful. Same interpolation as above.
-* BribeFailureDialogue - list of strings from which dialogue is randomly chosen when a bribe attempt is successsful. Same interpolation as above.
-* MinTimesEncountered and `MaxTimesEncountered` - Minimum and Maximum (duh) number of times you must have faced this merc faction in order for this dialogue bucket to be used.
-* BribeAcceptanceMultiplier - float, multiplier for the likelihood that a bribe attempt will be successful, for a given bucket (so you can match the odds of bribe success to the "personality" of the merc faction in the dialogue).
+* `BribeSuccessDialogue` - list of strings from which dialogue is randomly chosen when a bribe attempt is successsful. Same interpolation as above.
+* `BribeFailureDialogue` - list of strings from which dialogue is randomly chosen when a bribe attempt is successsful. Same interpolation as above.
+* `MinTimesEncountered` and `MaxTimesEncountered` - Minimum and Maximum (duh) number of times you must have faced this merc faction in order for this dialogue bucket to be used.
+* `BribeAcceptanceMultiplier` - float, multiplier for the likelihood that a bribe attempt will be successful, for a given bucket (so you can match the odds of bribe success to the "personality" of the merc faction in the dialogue).
 
 If multiple dialogue buckets are usable according to the Min/Max TimesEncountered requirements, a bucket will be chosen at random (the bucket chosen at contract start also then supplies the success/failure dialogue for bribes, if applicable).
 
