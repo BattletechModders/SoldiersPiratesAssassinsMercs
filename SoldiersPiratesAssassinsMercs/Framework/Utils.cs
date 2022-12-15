@@ -180,7 +180,6 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             if (!sim.CompanyStats.ContainsStatistic(statNameF))
             {
                 sim.CompanyStats.AddStatistic<int>(statNameF, 1);
-
             }
             else
             {
@@ -190,11 +189,10 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             if (!sim.CompanyStats.ContainsStatistic(statNameSys))
             {
                 sim.CompanyStats.AddStatistic<string>(statNameSys, sim.CurSystem.Name);
-
             }
             else
             {
-                sim.CompanyStats.ModifyStat("ContractResolution", -1, statNameF,
+                sim.CompanyStats.ModifyStat("ContractResolution", -1, statNameSys,
                     StatCollection.StatOperation.Set, sim.CurSystem.Name);
             }
         }
