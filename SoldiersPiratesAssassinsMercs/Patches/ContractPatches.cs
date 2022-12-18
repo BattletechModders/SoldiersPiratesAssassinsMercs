@@ -30,12 +30,12 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         [HarmonyPatch(typeof(HostilityMatrix), MethodType.Constructor, new Type[]{typeof(CombatGameState), typeof(EncounterPlayStyle)})]
         public static class HostilityMatrix_guidToIndexDictionary
         {
-            public static void Postfix(CombatGameState combatGameState, EncounterPlayStyle encounterPlayStyle, ref Dictionary<string, int> ___guidToIndexDictionary, ref Hostility[,] ____matrix)
+            public static void Postfix(HostilityMatrix __instance, CombatGameState combatGameState, EncounterPlayStyle encounterPlayStyle)
             {
-                ___guidToIndexDictionary.Add("ddfd570d-f9e4-42f8-b2e8-671eb1e8f43a", 11);
+                __instance.guidToIndexDictionary.Add("ddfd570d-f9e4-42f8-b2e8-671eb1e8f43a", 11);
                 if (encounterPlayStyle == EncounterPlayStyle.SinglePlayer)
                 {
-                    ____matrix = new Hostility[,]
+                    __instance._matrix = new Hostility[,]
                 {
                     {
                         Hostility.FRIENDLY,
@@ -260,12 +260,13 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                         return;
                     }
                     ModState.OriginalTargetFactionTeamOverride = __instance.Override.targetTeam.Copy();
-                    var contractFactionIDsT = Traverse.Create(__instance).Field("teamFactionIDs");
-                    var contractFactionIDs = new Dictionary<string, int>(contractFactionIDsT.GetValue<Dictionary<string, int>>());
+                    //var contractFactionIDsT = Traverse.Create(__instance).Field("teamFactionIDs");
+                    //var contractFactionIDs = new Dictionary<string, int>(contractFactionIDsT.GetValue<Dictionary<string, int>>());
+                    var contractFactionIDs = __instance.teamFactionIDs;
                     if (contractFactionIDs.ContainsKey(__instance.Override.targetTeam.teamGuid))
                     {
                         contractFactionIDs[__instance.Override.targetTeam.teamGuid] = mercFaction;
-                        contractFactionIDsT.SetValue(contractFactionIDs);
+                        //contractFactionIDsT.SetValue(contractFactionIDs);
                     }
 
                     __instance.Override.targetTeam.ReAssignFactionToTeam(contractFactionIDs);
@@ -421,8 +422,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         public static class AAR_FactionReputationResultWidget_InitializeData_Patch
         {
             public static void Postfix(AAR_FactionReputationResultWidget __instance, SimGameState theSimState,
-                Contract theContract,
-                List<SGReputationWidget_Simple> ___FactionWidgets, RectTransform ___WidgetListAnchor)
+                Contract theContract)
             {
                 if (ModState.OriginalTargetFactionTeamOverride != null)
                 {
@@ -442,9 +442,9 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                                 .PooledInstantiate("uixPrfWidget_AAR_FactionRepBarAndIcon",
                                     BattleTechResourceType.UIModulePrefabs)
                                 .GetComponent<SGReputationWidget_Simple>();
-                            component.transform.SetParent(___WidgetListAnchor, false);
+                            component.transform.SetParent(__instance.WidgetListAnchor, false);
 
-                            ___FactionWidgets.Add(component);
+                            __instance.FactionWidgets.Add(component);
 
                             var repChange = 0;
 
@@ -459,7 +459,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                                 repChange = theContract.TargetReputationResults;
                             }
 
-                            var idx = ___FactionWidgets.Count - 1;
+                            var idx = __instance.FactionWidgets.Count - 1;
                             __instance.SetWidgetData(idx, faction.FactionValue, repChange, true);
                             theSimState.SetReputation(faction.FactionValue, repChange);
                         }
@@ -481,9 +481,9 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                                 .PooledInstantiate("uixPrfWidget_AAR_FactionRepBarAndIcon",
                                     BattleTechResourceType.UIModulePrefabs)
                                 .GetComponent<SGReputationWidget_Simple>();
-                            component.transform.SetParent(___WidgetListAnchor, false);
+                            component.transform.SetParent(__instance.WidgetListAnchor, false);
 
-                            ___FactionWidgets.Add(component);
+                            __instance.FactionWidgets.Add(component);
 
                             var repChange = 0;
 
@@ -501,7 +501,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                             var factoredRepChange = repChange * ModInit.modSettings.MercLanceAdditionConfig.MercFactionReputationFactor;
                             var finalRepChange = Mathf.RoundToInt(factoredRepChange);
 
-                            var idx = ___FactionWidgets.Count - 1;
+                            var idx = __instance.FactionWidgets.Count - 1;
                             __instance.SetWidgetData(idx, faction.FactionValue, finalRepChange, true);
                             theSimState.SetReputation(faction.FactionValue, finalRepChange);
                         }

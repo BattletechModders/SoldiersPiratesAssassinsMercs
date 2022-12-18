@@ -26,7 +26,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         public static class DestroyLanceObjective_UpdateCounts
         {
             static bool Prepare() => false;
-            public static void Postfix(DestroyLanceObjective __instance, ref int ___lanceActorsDead)
+            public static void Postfix(DestroyLanceObjective __instance)
             {
                 if (ModState.HostileMercLanceTeamOverride != null)
                 {
@@ -34,7 +34,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     var despawnedActors= targetUnits.FindAll(x => x is Mech mech && mech.WasDespawned && x.EncounterTags.Contains(Tags.ADDITIONAL_LANCE));
                     if (despawnedActors.Count > 0)
                     {
-                        ___lanceActorsDead += despawnedActors.Count;
+                        __instance.lanceActorsDead += despawnedActors.Count;
                     }
                 }
             }

@@ -17,15 +17,15 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         public static class LanceOverride_RequestLance_DEBUG
         {
             static bool Prepare() => ModInit.modLog?.Debug != null;
-            public static void Prefix(LanceOverride __instance, MetadataDatabase mdd, DateTime? currentDate, TagSet companyTags, LanceDef ___loadedLanceDef)
+            public static void Prefix(LanceOverride __instance, MetadataDatabase mdd, DateTime? currentDate, TagSet companyTags)
             {
                 ModInit.modLog?.Debug?.Write(
                     $"[LanceOverride_RequestLance_DEBUG- PREFIX] lanceDefId: {__instance?.lanceDefId}. Shouldnt be null; selected lancedefID: {__instance?.selectedLanceDefId} ");
             }
-            public static void Postfix(LanceOverride __instance, MetadataDatabase mdd, DateTime? currentDate, TagSet companyTags, LanceDef ___loadedLanceDef)
+            public static void Postfix(LanceOverride __instance, MetadataDatabase mdd, DateTime? currentDate, TagSet companyTags)
             {
                 ModInit.modLog?.Debug?.Write(
-                    $"[LanceOverride_RequestLance_DEBUG -POSTFIX] lanceDefId: {__instance?.lanceDefId}. Shouldnt be null; selected lancedefID: {__instance?.selectedLanceDefId} loaded lanceDef: {___loadedLanceDef?.Description?.Id}");
+                    $"[LanceOverride_RequestLance_DEBUG -POSTFIX] lanceDefId: {__instance?.lanceDefId}. Shouldnt be null; selected lancedefID: {__instance?.selectedLanceDefId} loaded lanceDef: {__instance?.loadedLanceDef?.Description?.Id}");
             }
         }
 
@@ -46,10 +46,10 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         {
             static bool Prepare() => ModInit.modLog?.Debug != null;
 
-            public static void Postfix(LanceOverride __instance, MetadataDatabase mdd, DateTime? currentDate, TagSet companyTags, LanceDef ___loadedLanceDef)
+            public static void Postfix(LanceOverride __instance, MetadataDatabase mdd, DateTime? currentDate, TagSet companyTags)
             {
                 ModInit.modLog?.Debug?.Write(
-                    $"[LanceOverride_RequestLanceComplete_DEBUG] Processing lance: {__instance.lanceDefId}{__instance?.selectedLanceDefId}\n is LoadedLanceDef null? {___loadedLanceDef == null}\n unitSpawnPointOverrideCount? {__instance.unitSpawnPointOverrideList?.Count} \n is first unit in loadedlancedef null? {___loadedLanceDef?.LanceUnits?.First() == null}");
+                    $"[LanceOverride_RequestLanceComplete_DEBUG] Processing lance: {__instance.lanceDefId}{__instance?.selectedLanceDefId}\n is LoadedLanceDef null? {__instance.loadedLanceDef == null}\n unitSpawnPointOverrideCount? {__instance.unitSpawnPointOverrideList?.Count} \n is first unit in loadedlancedef null? {__instance.loadedLanceDef?.LanceUnits?.First() == null}");
             }
         }
 
