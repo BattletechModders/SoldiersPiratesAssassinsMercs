@@ -21,6 +21,7 @@ using MissionControl.Trigger;
 using SoldiersPiratesAssassinsMercs.Framework;
 using UIWidgets;
 using UnityEngine;
+using static BattleTech.ModSupport.Utils.AdvancedJSONMerge;
 using ModState = SoldiersPiratesAssassinsMercs.Framework.ModState;
 
 namespace SoldiersPiratesAssassinsMercs.Patches
@@ -221,8 +222,14 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
             public static void Postfix(Contract __instance)
             {
-                if (ModState.OriginalTargetFactionTeamOverride != null)
+                if (ModState.AltFactionTeamOverride != null)
+                {
+                    __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.AltFactionTeamOverride);
+                }
+                else if (ModState.MercFactionTeamOverride != null)
+                {
                     __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.MercFactionTeamOverride);
+                }
             }
         }
 
@@ -237,8 +244,14 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
             public static void Postfix(Contract __instance)
             {
-                if (ModState.OriginalTargetFactionTeamOverride != null)
+                if (ModState.AltFactionTeamOverride != null)
+                {
+                    __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.AltFactionTeamOverride);
+                }
+                else if (ModState.MercFactionTeamOverride != null)
+                {
                     __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.MercFactionTeamOverride);
+                }
             }
         }
 
@@ -251,7 +264,38 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
                 if (sim == null) return;
                 if (!__instance.Accepted) return;
-                if (Utils.ShouldReplaceOpforWithMercs(__instance.Override))
+                if (Utils.ShouldReplaceOpforWithAlternate(__instance.Override, out var config))
+                {
+                    var altFaction = Utils.GetAlternateFactionPoolFromWeight(sim, config);
+                    ModState.OriginalTargetFactionTeamOverride = __instance.Override.targetTeam.Copy();
+
+
+                    var contractFactionIDs = __instance.teamFactionIDs;
+                    if (contractFactionIDs.ContainsKey(__instance.Override.targetTeam.teamGuid))
+                    {
+                        contractFactionIDs[__instance.Override.targetTeam.teamGuid] = altFaction;
+                        //contractFactionIDsT.SetValue(contractFactionIDs);
+                    }
+
+                    __instance.Override.targetTeam.ReAssignFactionToTeam(contractFactionIDs);
+                    ModState.AltFactionTeamOverride = __instance.Override.targetTeam;
+
+                    if (ModInit.modSettings.enableTrace)
+                    {
+                        var debugIDS = "";
+                        foreach (var kvp in __instance.TeamFactionIDs)
+                        {
+                            debugIDS += $"{kvp.Key}: {FactionEnumeration.GetFactionByID(kvp.Value).Name}\n";
+                        }
+                        ModInit.modLog?.Trace?.Write($"[Contract_BeginRequestResources] contractFactionIDs are now {debugIDS}\n");
+                    }
+
+                    ModInit.modLog?.Info?.Write(
+                        $"[Contract_BeginRequestResources] Set ModState.AltFactionTeamOverride to {ModState.AltFactionTeamOverride?.faction}, original was {ModState.OriginalTargetFactionTeamOverride?.faction}. TargetTeam is now {__instance.Override.targetTeam.FactionValue.Name}. Reinitializing MissionControl");
+                    global::MissionControl.MissionControl.Instance.SetContract(__instance);
+                    return;
+                }
+                else if (Utils.ShouldReplaceOpforWithMercs(__instance.Override))
                 {
                     var mercFaction = Utils.GetMercFactionPoolFromWeight(sim, __instance.Override.targetTeam.faction);
                     if (mercFaction == -1)
@@ -285,6 +329,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     ModInit.modLog?.Info?.Write(
                         $"[Contract_BeginRequestResources] Set ModState.MercFactionForReplacement to {ModState.MercFactionTeamOverride?.faction}, original was {ModState.OriginalTargetFactionTeamOverride?.faction}. TargetTeam is now {__instance.Override.targetTeam.FactionValue.Name}. Reinitializing MissionControl");
                     global::MissionControl.MissionControl.Instance.SetContract(__instance);
+                    return;
                 }
                 else if (Utils.ShouldAddMercLance(__instance.Override))
 
@@ -306,6 +351,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     global::MissionControl.MissionControl.Instance.SetContract(__instance);
 //                    ModState.HostileMercLanceTeamOverride.RunMadLibs(__instance, sim.DataManager);
 //                    ModState.HostileMercLanceTeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, __instance.Override.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
+                    return;
                 }
                 //maybwe inject friendly mercs here. one thing at a time though.
             }
@@ -378,7 +424,25 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] Running GetMatchingUnitDefs");
                 var tags = requiredTags.ToArray();
                 ModInit.modLog?.Trace?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] TAGSPAM {string.Join(", ",tags)}");
-                if (ModState.MercFactionTeamOverride != null)
+                if (ModState.AltFactionTeamOverride != null)
+                {
+                    var altFactionLowerCased = ModState.AltFactionTeamOverride.FactionValue.Name.ToLower();
+                    if (requiredTags.Contains(altFactionLowerCased))
+                    {
+                        ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Found alt faction tag: {altFactionLowerCased} in requiredTags, should be using merc units");
+                        var resultDefs = Utils.GetMatchingUnitDefsOriginal(mdd, requiredTags, excludedTags, checkOwnership,
+                            currentDate, companyTags);
+                        if (resultDefs.Count == 0)
+                        {
+                            requiredTags.Remove(altFactionLowerCased);
+                            requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag);
+                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing alt faction tag: {altFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag}");
+                            return;
+                        }
+                        ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Proceeding using original requiredTags.");
+                    }
+                }
+                else if (ModState.MercFactionTeamOverride != null)
                 {
                     var mercFactionLowerCased = ModState.MercFactionTeamOverride.FactionValue.Name.ToLower();
                     if (requiredTags.Contains(mercFactionLowerCased))
@@ -424,7 +488,50 @@ namespace SoldiersPiratesAssassinsMercs.Patches
             public static void Postfix(AAR_FactionReputationResultWidget __instance, SimGameState theSimState,
                 Contract theContract)
             {
-                if (ModState.OriginalTargetFactionTeamOverride != null)
+                if (ModState.AltFactionTeamOverride != null)
+                {
+                    ModInit.modLog?.Info?.Write($"[AAR_FactionReputationResultWidget_InitializeData_Patch] Processing reputation change for original target faction due to replacement with alt faction.");
+                    var faction = UnityGameInstance.BattleTechGame.DataManager.Factions
+                        .FirstOrDefault(x =>
+                            x.Value.FactionValue.Name == ModState.OriginalTargetFactionTeamOverride.FactionValue.Name)
+                        .Value;
+
+                   if (faction != null) 
+                   {
+                        if (faction.FactionValue.DoesGainReputation) //TargetVsEmployer
+                        {
+                            var component = theSimState.DataManager
+                                .PooledInstantiate("uixPrfWidget_AAR_FactionRepBarAndIcon",
+                                    BattleTechResourceType.UIModulePrefabs)
+                                .GetComponent<SGReputationWidget_Simple>();
+                            component.transform.SetParent(__instance.WidgetListAnchor, false);
+
+                            __instance.FactionWidgets.Add(component);
+
+                            var repChange = 0;
+
+                            if ((theContract.TargetReputationResults >= -1 &&
+                                 theContract.Override.targetTeam.FactionValue.DoesGainReputation) ||
+                                !theContract.Override.targetTeam.FactionValue.DoesGainReputation)
+                            {
+                                if (theContract.EmployerReputationResults > 0)
+                                {
+                                    repChange = -theContract.EmployerReputationResults;
+                                }
+                                else repChange = -(theContract.Difficulty + 2);
+                            }
+                            else
+                            {
+                                repChange = theContract.TargetReputationResults;
+                            }
+
+                            var idx = __instance.FactionWidgets.Count - 1;
+                            __instance.SetWidgetData(idx, faction.FactionValue, repChange, true);
+                            theSimState.SetReputation(faction.FactionValue, repChange);
+                        }
+                    }
+                }
+                else if (ModState.MercFactionTeamOverride != null)
                 {
                     ModInit.modLog?.Info?.Write($"[AAR_FactionReputationResultWidget_InitializeData_Patch] Processing reputation change for original target faction due to replacement with mercs.");
                     var faction = UnityGameInstance.BattleTechGame.DataManager.Factions
@@ -452,7 +559,11 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                                  theContract.Override.targetTeam.FactionValue.DoesGainReputation) ||
                                 !theContract.Override.targetTeam.FactionValue.DoesGainReputation)
                             {
-                                repChange = -theContract.Difficulty + 2;
+                                if (theContract.EmployerReputationResults > 0)
+                                {
+                                    repChange = -theContract.EmployerReputationResults;
+                                }
+                                else repChange = -(theContract.Difficulty + 2);
                             }
                             else
                             {
@@ -491,7 +602,11 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                                  theContract.Override.targetTeam.FactionValue.DoesGainReputation) ||
                                 !theContract.Override.targetTeam.FactionValue.DoesGainReputation)
                             {
-                                repChange = -theContract.Difficulty + 2;
+                                if (theContract.EmployerReputationResults > 0)
+                                {
+                                    repChange = -theContract.EmployerReputationResults;
+                                }
+                                else repChange = -(theContract.Difficulty + 2);
                             }
                             else
                             {

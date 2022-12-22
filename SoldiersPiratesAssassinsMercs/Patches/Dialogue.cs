@@ -42,6 +42,10 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 var numFaced = 0;
                 TeamOverride mercFaction = null;
                 Team mercTeam = null;
+                if (ModState.AltFactionTeamOverride != null)
+                {
+                    //no dialogue for alt faction, skipping this
+                }
                 if (ModState.MercFactionTeamOverride != null)
                 {
                     numFaced = ModState.MercFactionTeamOverride.GetMercFactionStat(sim);
@@ -175,7 +179,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         static bool Prepare() => false; // disable, not doing ability?
         public static void Postfix(Team __instance, AbstractActor unit)
         {
-            if (ModState.MercFactionTeamOverride != null || ModState.HostileMercLanceTeamOverride != null)
+            if (ModState.HostileMercLanceTeamOverride != null)
             {
                 if (__instance.IsLocalPlayer && unit.GetPilot().IsPlayerCharacter)
                 {

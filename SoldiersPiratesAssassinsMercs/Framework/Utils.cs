@@ -117,6 +117,45 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             return factionValueInt;
         }
 
+        public static bool ShouldReplaceOpforWithAlternate(ContractOverride contractOverride, out Classes.ConfigOptions.AlternateOpforConfig config)
+        {
+            config = null;
+            if (ModInit.modSettings.AlternateFactionConfigs.ContainsKey(contractOverride.targetTeam.faction))
+            {
+                config = ModInit.modSettings.AlternateFactionConfigs[contractOverride.targetTeam.faction];
+                var roll = ModInit.Random.NextDouble();
+                ModInit.modLog?.Info?.Write($"[ShouldReplaceOpforWithMercs] Roll {roll} < chance {config.FactionReplaceChance}? {roll < config.FactionReplaceChance}");
+                if (roll < config.FactionReplaceChance) return true;
+            }
+            return false;
+        }
+
+        public static int GetAlternateFactionPoolFromWeight(SimGameState sim, Classes.ConfigOptions.AlternateOpforConfig config)
+        {
+            var factionValueInt = -1;
+            var factionPool = new List<int>();
+            foreach (var altFaction in config.AlternateOpforWeights)
+            {
+                ModInit.modLog?.Trace?.Write(
+                    $"[GetAlternateFactionPoolFromWeight] Processing weight for alt faction group: {altFaction.Key}");
+                var factionValue = GetFactionValueFromString(altFaction.Key);
+                //var rep = sim.GetReputation(factionValue);
+                var weight = altFaction.Value;
+                for (int i = 0; i < weight; i++)
+                {
+                    factionPool.Add(factionValue.ID);
+                    ModInit.modLog?.Trace?.Write(
+                        $"[GetAlternateFactionPoolFromWeight] Added {factionValue.Name} to factionPool with ID {factionValue.ID}");
+                }
+            }
+            if (factionPool.Count > 0)
+            {
+                factionValueInt = factionPool.GetRandomElement();
+            }
+            ModInit.modLog?.Info?.Write($"[GetAlternateFactionPoolFromWeight] Selected ID {factionValueInt}");
+            return factionValueInt;
+        }
+
         public static bool ShouldReplaceOpforWithMercs(ContractOverride contractOverride)
         {
             var chance = ModInit.modSettings.OpforReplacementConfig.BaseReplaceChance;

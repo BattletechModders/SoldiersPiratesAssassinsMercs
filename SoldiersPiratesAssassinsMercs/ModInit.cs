@@ -62,7 +62,12 @@ namespace SoldiersPiratesAssassinsMercs
         public Classes.ConfigOptions.MercLanceAdditionConfig MercLanceAdditionConfig =
             new Classes.ConfigOptions.MercLanceAdditionConfig();
 
-        public Dictionary<string, Classes.ConfigOptions.MercFactionConfigs> MercFactionConfigs = new Dictionary<string, Classes.ConfigOptions.MercFactionConfigs>(); //merc factions need to be configd here to be used. key is Merc Name
+        public Dictionary<string, Classes.ConfigOptions.AlternateOpforConfig> AlternateFactionConfigs =
+            new Dictionary<string, Classes.ConfigOptions.AlternateOpforConfig>();
+
+
+
+        public Dictionary<string, Classes.ConfigOptions.MercFactionConfig> MercFactionConfigs = new Dictionary<string, Classes.ConfigOptions.MercFactionConfig>(); //merc factions need to be configd here to be used. key is Merc Name
 
         public string FallbackUnitFactionTag = ""; //probably be just "mercenaries" for BTA// faction tags are lowercase
 

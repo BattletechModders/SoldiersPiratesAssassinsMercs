@@ -34,7 +34,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 public List<string> BlacklistContractIDs = new List<string>();
                 public float MercFactionReputationFactor = 0f;
             }
-            public class MercFactionConfigs
+            public class MercFactionConfig
             {
                 public string MercFactionName = ""; //e,g, KellHounds or RazorbackMercs
                 public int AppearanceWeight = 0; //base "weight" for selection
@@ -42,6 +42,13 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 public List<string> EmployerBlacklist = new List<string>();
                 public float UnitRating = 1; //higher rating means less likely to take bribe to disengage or switch sides
                 public List<string> PersonalityAttributes = new List<string>();
+            }
+
+            public class AlternateOpforConfig // these are alternate factions for specific factions which are NOT mercenaries.
+                                              // part of setting, where dictionary key = faction name being replaced
+            {
+                public float FactionReplaceChance = 0f;
+                public Dictionary<string, int> AlternateOpforWeights = new Dictionary<string, int>();
             }
         }
         public class MercDialogueBucket //is value for dictionary where key = PersonalityAttributes

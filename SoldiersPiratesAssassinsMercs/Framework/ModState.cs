@@ -23,6 +23,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
         public static TeamDefinition HostileMercTeamDefinition = new TeamDefinition("ddfd570d-f9e4-42f8-b2e8-671eb1e8f43a", "HostileMercenaryTeam");
         public static TeamDefinition FriendlyMercTeamDefinition = new TeamDefinition("be68d8cb-6e32-401e-889e-c37cf10c0528", "FriendlyMercenaryTeam");
         public static TeamOverride MercFactionTeamOverride = null;
+        public static TeamOverride AltFactionTeamOverride = null;
         public static TeamOverride OriginalTargetFactionTeamOverride = null;
         public static bool ActiveContractShouldReplaceLanceWithMercs = false;
         public static TeamOverride HostileMercLanceTeamOverride = null;
@@ -74,6 +75,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
            HostileMercTeamDefinition = new TeamDefinition("ddfd570d-f9e4-42f8-b2e8-671eb1e8f43a", "HostileMercenaryTeam"); 
            FriendlyMercTeamDefinition = new TeamDefinition("be68d8cb-6e32-401e-889e-c37cf10c0528", "FriendlyMercenaryTeam"); 
            MercFactionTeamOverride = null;
+           AltFactionTeamOverride = null;
            OriginalTargetFactionTeamOverride = null;
            ActiveContractShouldReplaceLanceWithMercs = false;
            HostileMercLanceTeamOverride = null;
