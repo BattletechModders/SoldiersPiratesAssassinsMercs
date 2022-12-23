@@ -23,6 +23,7 @@ using MissionControl.Logic;
 using UIWidgets;
 using UnityEngine;
 using us.frostraptor.modUtils.CustomDialog;
+using static MaterialAnimator;
 using Random = System.Random;
 
 namespace SoldiersPiratesAssassinsMercs.Framework
@@ -38,13 +39,35 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             return matchingDataByTagSet;
         }
 
-        public static void ReAssignFactionToTeam(this TeamOverride team, Dictionary<string, int> teamFactions)
+        public static void ReAssignHostileMercFactionToTeam(this TeamOverride team, Dictionary<string, int> teamFactions, DataManager dm)
         {
             if (teamFactions.ContainsKey(team.teamGuid))
             {
                 FactionValue factionByID = FactionEnumeration.GetFactionByID(teamFactions[team.teamGuid]);
                 team.faction = factionByID.Name;
-                ModState.HostileMercTeamDefinition.FactionValue = factionByID;
+                team.dataManager = dm;
+                ModState.HostileMercLanceTeamDefinition.FactionValue = factionByID;
+            }
+        }
+        public static void ReAssignHostileAltFactionToTeam(this TeamOverride team, Dictionary<string, int> teamFactions, DataManager dm)
+        {
+            if (teamFactions.ContainsKey(team.teamGuid))
+            {
+                FactionValue factionByID = FactionEnumeration.GetFactionByID(teamFactions[team.teamGuid]);
+                team.faction = factionByID.Name;
+                team.dataManager = dm;
+                ModState.HostileAltLanceTeamDefinition.FactionValue = factionByID;
+            }
+        }
+
+        public static void ReAssignHostileToAllFactionToTeam(this TeamOverride team, Dictionary<string, int> teamFactions, DataManager dm)
+        {
+            if (teamFactions.ContainsKey(team.teamGuid))
+            {
+                FactionValue factionByID = FactionEnumeration.GetFactionByID(teamFactions[team.teamGuid]);
+                team.faction = factionByID.Name;
+                team.dataManager = dm;
+                ModState.HostileToAllLanceTeamDefinition.FactionValue = factionByID;
             }
         }
 
@@ -73,11 +96,28 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             loadRequest.ProcessRequests(10U);
         }
 
-        public static void AssignMercFactionToTeamState(this TeamOverride team, int mercFactionKey)
+        public static void AssignHostileMercFactionToTeamState(this TeamOverride team, int mercFactionKey, DataManager dm)
         {
             FactionValue factionByID = FactionEnumeration.GetFactionByID(mercFactionKey);
             team.faction = factionByID.Name;
-            ModState.HostileMercTeamDefinition.FactionValue = factionByID;
+            team.dataManager = dm;
+            ModState.HostileMercLanceTeamDefinition.FactionValue = factionByID;
+        }
+
+        public static void AssignHostileAltFactionToTeamState(this TeamOverride team, int mercFactionKey, DataManager dm)
+        {
+            FactionValue factionByID = FactionEnumeration.GetFactionByID(mercFactionKey);
+            team.faction = factionByID.Name;
+            team.dataManager = dm;
+            ModState.HostileAltLanceTeamDefinition.FactionValue = factionByID;
+        }
+
+        public static void AssignHostileToAllFactionToTeamState(this TeamOverride team, int hostileFactionKey, DataManager dm)
+        {
+            FactionValue factionByID = FactionEnumeration.GetFactionByID(hostileFactionKey);
+            team.faction = factionByID.Name;
+            team.dataManager = dm;
+            ModState.HostileToAllLanceTeamDefinition.FactionValue = factionByID;
         }
 
         public static FactionValue GetFactionValueFromString(string factionID)
@@ -116,15 +156,28 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             ModInit.modLog?.Info?.Write($"[GetMercFactionPoolFromWeight] Selected ID {factionValueInt}");
             return factionValueInt;
         }
-
-        public static bool ShouldReplaceOpforWithAlternate(ContractOverride contractOverride, out Classes.ConfigOptions.AlternateOpforConfig config)
+        public static bool ShouldReplaceOpforWithPlanetAlternate(ContractOverride contractOverride, out Classes.ConfigOptions.AlternateOpforConfig config)
+        {
+            config = null;
+            var sim = UnityGameInstance.BattleTechGame.Simulation;
+            if (sim == null) return false;
+            if (ModInit.modSettings.PlanetFactionConfigs.ContainsKey(sim.CurSystem.Def.CoreSystemID))// eg. starsystemdef_Place
+            {
+                config = ModInit.modSettings.PlanetFactionConfigs[sim.CurSystem.Def.CoreSystemID];
+                var roll = ModInit.Random.NextDouble();
+                ModInit.modLog?.Info?.Write($"[ShouldReplaceOpforWithPlanetAlternate] Roll {roll} < chance {config.FactionReplaceChance}? {roll < config.FactionReplaceChance}");
+                if (roll < config.FactionReplaceChance) return true;
+            }
+            return false;
+        }
+        public static bool ShouldReplaceOpforWithFactionAlternate(ContractOverride contractOverride, out Classes.ConfigOptions.AlternateOpforConfig config)
         {
             config = null;
             if (ModInit.modSettings.AlternateFactionConfigs.ContainsKey(contractOverride.targetTeam.faction))
             {
                 config = ModInit.modSettings.AlternateFactionConfigs[contractOverride.targetTeam.faction];
                 var roll = ModInit.Random.NextDouble();
-                ModInit.modLog?.Info?.Write($"[ShouldReplaceOpforWithMercs] Roll {roll} < chance {config.FactionReplaceChance}? {roll < config.FactionReplaceChance}");
+                ModInit.modLog?.Info?.Write($"[ShouldReplaceOpforWithFactionAlternate] Roll {roll} < chance {config.FactionReplaceChance}? {roll < config.FactionReplaceChance}");
                 if (roll < config.FactionReplaceChance) return true;
             }
             return false;
@@ -159,18 +212,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
         public static bool ShouldReplaceOpforWithMercs(ContractOverride contractOverride)
         {
             var chance = ModInit.modSettings.OpforReplacementConfig.BaseReplaceChance;
-            if (ModInit.modSettings.OpforReplacementConfig.BlacklistContractIDs.Contains(contractOverride.ID))
-            {
-                ModInit.modLog?.Trace?.Write($"[ShouldReplaceOpforWithMercs] {contractOverride.ID} is blacklisted, not replacing");
-                return false;
-            }
-
-            if (ModInit.modSettings.OpforReplacementConfig.BlacklistContractTypes.Contains(contractOverride
-                    .ContractTypeValue.Name))
-            {
-                ModInit.modLog?.Trace?.Write($"[ShouldReplaceOpforWithMercs] {contractOverride.ContractTypeValue.Name} is blacklisted, not replacing");
-                return false;
-            }
+            
             if (ModInit.modSettings.OpforReplacementConfig.FactionsReplaceOverrides.ContainsKey(contractOverride
                     .targetTeam.faction))
             {
@@ -181,21 +223,38 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             if (roll < chance) return true;
             return false;
         }
+
+        public static bool ShouldAddAltFactionLance(ContractOverride contractOverride, out Classes.ConfigOptions.AlternateOpforConfig config)
+        {
+            config = null;
+            if (ModInit.modSettings.AlternateFactionConfigs.ContainsKey(contractOverride.targetTeam.faction))
+            {
+                config = ModInit.modSettings.AlternateFactionConfigs[contractOverride.targetTeam.faction];
+                var roll = ModInit.Random.NextDouble();
+                ModInit.modLog?.Info?.Write($"[ShouldAddAltFactionLance] Roll {roll} < chance {config.FactionMCAdditionalLanceReplaceChance}? {roll < config.FactionReplaceChance}");
+                if (roll < config.FactionMCAdditionalLanceReplaceChance) return true;
+            }
+            return false;
+        }
+        public static bool ShouldAddPlanetLance(ContractOverride contractOverride, out Classes.ConfigOptions.AlternateOpforConfig config)
+        {
+            config = null;
+            var sim = UnityGameInstance.BattleTechGame.Simulation;
+            if (sim == null) return false;
+            if (ModInit.modSettings.PlanetFactionConfigs.ContainsKey(sim.CurSystem.Def.CoreSystemID))
+            {
+                config = ModInit.modSettings.PlanetFactionConfigs[sim.CurSystem.Def.CoreSystemID];
+                var roll = ModInit.Random.NextDouble();
+                ModInit.modLog?.Info?.Write($"[ShouldAddPlanetLance] Roll {roll} < chance {config.FactionMCAdditionalLanceReplaceChance}? {roll < config.FactionReplaceChance}");
+                if (roll < config.FactionMCAdditionalLanceReplaceChance) return true;
+            }
+            return false;
+        }
+
         public static bool ShouldAddMercLance(ContractOverride contractOverride)
         {
             var chance = ModInit.modSettings.MercLanceAdditionConfig.BaseReplaceChance;
-            if (ModInit.modSettings.MercLanceAdditionConfig.BlacklistContractIDs.Contains(contractOverride.ID))
-            {
-                ModInit.modLog?.Trace?.Write($"[ShouldAddMercLance] {contractOverride.ID} is blacklisted, not replacing");
-                return false;
-            }
-
-            if (ModInit.modSettings.MercLanceAdditionConfig.BlacklistContractTypes.Contains(contractOverride
-                    .ContractTypeValue.Name))
-            {
-                ModInit.modLog?.Trace?.Write($"[ShouldAddMercLance] {contractOverride.ContractTypeValue.Name} is blacklisted, not replacing");
-                return false;
-            }
+           
             if (ModInit.modSettings.MercLanceAdditionConfig.FactionsReplaceOverrides.ContainsKey(contractOverride
                     .targetTeam.faction))
             {
@@ -205,11 +264,10 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             ModInit.modLog?.Info?.Write($"[ShouldAddMercLance] Roll {roll} < chance {chance}? {roll < chance}");
             if (roll < chance)
             {
-                ModState.ActiveContractShouldReplaceLanceWithMercs = true;
+                //ModState.ActiveContractShouldReplaceLanceWithMercs = true;
                 return true;
             }
             return false;
-
         }
 
         public static void UpdateMercFactionStats(this TeamOverride teamOverride, SimGameState sim)
@@ -260,17 +318,41 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 return sim.CompanyStats.GetValue<string>(statNameSys);
             }
         }
-
-        public static DialogueContent[] FetchMercDialogue(this TeamOverride mercTeamOverride, Team mercTeam, int timesFaced, SimGameState sim)
+        public static bool TryFetchGenericDialogue(this TeamOverride dialogueTeamOverride, Team dialogueTeam, int timesFaced, SimGameState sim, out DialogueContent[] dialogueContent)
         {
+            dialogueContent = Array.Empty<DialogueContent>();
             var combat = UnityGameInstance.BattleTechGame.Combat;
+            if (!ModState.GenericDialogueStrings.ContainsKey(dialogueTeamOverride.FactionValue.Name))
+                return false;
+            var dialogueStrings = ModState.GenericDialogueStrings[dialogueTeamOverride.FactionValue.Name];
+            var chosenDialogueRaw = dialogueStrings.GetRandomElement();
+            var customInterpedDialogue = InterpolateSPAMDialogue(chosenDialogueRaw, dialogueTeamOverride, sim);
+            var interpolated = Interpolator.Interpolate(customInterpedDialogue, sim.Context, true);
+            var quips = new List<string> { interpolated };
+
+            CastDef castDef = Coordinator.CreateCast(combat, Guid.NewGuid().ToString(), dialogueTeam);
+            DialogueContent content = BuildContent(dialogueTeamOverride, castDef, quips);
+            //var contents = new DialogueContent(interpolated, Color.white, mercTeamOverride.teamLeaderCastDefId, null, null,
+            //    DialogCameraDistance.Medium, DialogCameraHeight.Default, -1f);
+            //Traverse.Create(contents).Field("castDef").SetValue(castDef);
+            DialogueContent[] contents = { content };
+            //content[0] = contents;
+            dialogueContent = contents;
+            return true;
+        }
+        public static bool TryFetchMercDialogue(this TeamOverride mercTeamOverride, Team mercTeam, int timesFaced, SimGameState sim, out DialogueContent[] dialogueContent)
+        {
+            dialogueContent = Array.Empty<DialogueContent>();
+            var combat = UnityGameInstance.BattleTechGame.Combat;
+            if (!ModInit.modSettings.MercFactionConfigs.ContainsKey(mercTeamOverride.FactionValue.Name))
+                return false;
             var config = ModInit.modSettings.MercFactionConfigs[mercTeamOverride.FactionValue.Name];
             var dialogueBucketBin = new List<Classes.MercDialogueBucket>();
             foreach (var attribute in config.PersonalityAttributes)
             {
-                if (ModState.DialogueStrings.ContainsKey(attribute))
+                if (ModState.MercDialogueStrings.ContainsKey(attribute))
                 {
-                    foreach (var dialogueHolder in ModState.DialogueStrings[attribute])
+                    foreach (var dialogueHolder in ModState.MercDialogueStrings[attribute])
                     {
                         if ((dialogueHolder.MinTimesEncountered == -1 || timesFaced >= dialogueHolder.MinTimesEncountered) && (dialogueHolder.MaxTimesEncountered == -1 || timesFaced <= dialogueHolder.MaxTimesEncountered))
                         {
@@ -293,7 +375,8 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             //Traverse.Create(contents).Field("castDef").SetValue(castDef);
             DialogueContent[] contents = {content};
             //content[0] = contents;
-            return contents;
+            dialogueContent = contents;
+            return true;
         }
 
         public static string InterpolateSPAMDialogue(string dialogue, TeamOverride teamOverride, SimGameState sim)
@@ -313,7 +396,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             mercTeam = new Team();
             //if (ModState.MercFactionTeamOverride != null) mercTeam = combat.Teams.First(x => x.GUID == "be77cadd-e245-4240-a93e-b99cc98902a5");
             //else 
-            if (ModState.HostileMercLanceTeamOverride != null) mercTeam = combat.Teams.First(x => x.GUID == "ddfd570d-f9e4-42f8-b2e8-671eb1e8f43a");
+            if (ModState.HostileMercLanceTeamOverride != null) mercTeam = combat.Teams.First(x => x.GUID == GlobalVars.HostileMercLanceTeamDefinitionGUID);
             if (mercTeam != null)
             {
                 var totalValue = 0;

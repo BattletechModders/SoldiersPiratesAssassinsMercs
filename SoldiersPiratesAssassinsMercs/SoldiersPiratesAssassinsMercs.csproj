@@ -68,6 +68,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Framework\MissionControlClasses.cs" />
+    <Compile Include="Framework\GlobalVars.cs" />
     <Compile Include="Framework\Classes.cs" />
     <Compile Include="Framework\Utils.cs" />
     <Compile Include="Framework\ModState.cs" />

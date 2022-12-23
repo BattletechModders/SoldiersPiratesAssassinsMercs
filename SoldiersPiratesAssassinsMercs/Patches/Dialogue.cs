@@ -40,30 +40,61 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
                 if (sim == null) return;
                 var numFaced = 0;
-                TeamOverride mercFaction = null;
-                Team mercTeam = null;
-                if (ModState.AltFactionTeamOverride != null)
+                TeamOverride chattyFaction = null;
+                Team dialogueTeam = null;
+                DialogueContent[] dialogue = Array.Empty<DialogueContent>();
+                if (ModState.PlanetAltFactionTeamOverride != null)
                 {
-                    //no dialogue for alt faction, skipping this
+                    chattyFaction = ModState.PlanetAltFactionTeamOverride;
+                    dialogueTeam = __instance.Combat.Teams.First(x => x.GUID == "be77cadd-e245-4240-a93e-b99cc98902a5"); // targetteam GUID, const
+                    chattyFaction.TryFetchGenericDialogue(dialogueTeam, numFaced, sim, out dialogue);
                 }
-                if (ModState.MercFactionTeamOverride != null)
+                else if (ModState.AltFactionFactionTeamOverride != null)
+                {
+                    chattyFaction = ModState.AltFactionFactionTeamOverride;
+                    dialogueTeam = __instance.Combat.Teams.First(x => x.GUID == "be77cadd-e245-4240-a93e-b99cc98902a5"); // targetteam GUID, const
+                    chattyFaction.TryFetchGenericDialogue(dialogueTeam, numFaced, sim, out dialogue);
+                }
+
+                //merc dialogue only here
+                else if (ModState.MercFactionTeamOverride != null)
                 {
                     numFaced = ModState.MercFactionTeamOverride.GetMercFactionStat(sim);
-                    mercFaction = ModState.MercFactionTeamOverride;
-                    mercTeam = __instance.Combat.Teams.First(x => x.GUID == "be77cadd-e245-4240-a93e-b99cc98902a5");
+                    chattyFaction = ModState.MercFactionTeamOverride;
+                    dialogueTeam = __instance.Combat.Teams.First(x => x.GUID == "be77cadd-e245-4240-a93e-b99cc98902a5"); // targetteam GUID, const
+                    chattyFaction.TryFetchMercDialogue(dialogueTeam, numFaced, sim, out dialogue);
                 }
                 else if (ModState.HostileMercLanceTeamOverride != null)
                 {
                     numFaced = ModState.HostileMercLanceTeamOverride.GetMercFactionStat(sim);
-                    mercFaction = ModState.HostileMercLanceTeamOverride;
-                    mercTeam = __instance.Combat.Teams.First(x => x.GUID == "ddfd570d-f9e4-42f8-b2e8-671eb1e8f43a");
+                    chattyFaction = ModState.HostileMercLanceTeamOverride;
+                    dialogueTeam = __instance.Combat.Teams.First(x => x.GUID == GlobalVars.HostileMercLanceTeamDefinitionGUID);
+                    chattyFaction.TryFetchMercDialogue(dialogueTeam, numFaced, sim, out dialogue);
                 }
 
-                if (mercFaction == null) return;
-                if (!ModInit.modSettings.MercFactionConfigs.ContainsKey(mercFaction.FactionValue.Name)) return;
-                var DialogueID = $"Dialogue_SPAM_{mercFaction.FactionValue.Name}";
+                else if (ModState.HostileToAllLanceTeamOverride != null)
+                {
+                    numFaced = ModState.HostileToAllLanceTeamOverride.GetMercFactionStat(sim);
+                    chattyFaction = ModState.HostileToAllLanceTeamOverride;
+                    dialogueTeam = __instance.Combat.Teams.First(x => x.GUID == GlobalVars.HostileToAllLanceTeamDefinitionGUID);
+                    chattyFaction.TryFetchGenericDialogue(dialogueTeam, numFaced, sim, out dialogue);
+                }
+
+                else if (ModState.HostileAltLanceTeamOverride != null)
+                {
+                    numFaced = ModState.HostileAltLanceTeamOverride.GetMercFactionStat(sim);
+                    chattyFaction = ModState.HostileAltLanceTeamOverride;
+                    dialogueTeam = __instance.Combat.Teams.First(x => x.GUID == GlobalVars.HostileAltLanceTeamDefinitionGUID);
+                    chattyFaction.TryFetchGenericDialogue(dialogueTeam, numFaced, sim, out dialogue);
+                }
+
+                //if (chattyFaction == null) return;
+                //if (!ModInit.modSettings.MercFactionConfigs.ContainsKey(chattyFaction.FactionValue.Name)) return;
+
+                if (dialogue == Array.Empty<DialogueContent>()) return;
+                var DialogueID = $"Dialogue_SPAM_{chattyFaction.FactionValue.Name}";
                 //just copypaste from BlueWinds' EDM because she da bomb
-                var dialogue = mercFaction.FetchMercDialogue(mercTeam, numFaced, sim);
+                
 
                 ModInit.modLog.Info?.Write($"[TurnDirector_QueuePilotChatter] Displaying {DialogueID}");
 

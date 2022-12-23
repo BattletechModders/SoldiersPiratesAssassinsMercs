@@ -57,6 +57,7 @@ namespace SoldiersPiratesAssassinsMercs
     {
         public bool enableDebug = false;
         public bool enableTrace = false;
+        public List<string> BlacklistedContractTypesAndIDs = new List<string>();
         public Classes.ConfigOptions.OpforReplacementConfig OpforReplacementConfig =
             new Classes.ConfigOptions.OpforReplacementConfig();
         public Classes.ConfigOptions.MercLanceAdditionConfig MercLanceAdditionConfig =
@@ -65,6 +66,8 @@ namespace SoldiersPiratesAssassinsMercs
         public Dictionary<string, Classes.ConfigOptions.AlternateOpforConfig> AlternateFactionConfigs =
             new Dictionary<string, Classes.ConfigOptions.AlternateOpforConfig>();
 
+        public Dictionary<string, Classes.ConfigOptions.AlternateOpforConfig> PlanetFactionConfigs =
+            new Dictionary<string, Classes.ConfigOptions.AlternateOpforConfig>(); // eg. starsystemdef_Place for keys
 
 
         public Dictionary<string, Classes.ConfigOptions.MercFactionConfig> MercFactionConfigs = new Dictionary<string, Classes.ConfigOptions.MercFactionConfig>(); //merc factions need to be configd here to be used. key is Merc Name

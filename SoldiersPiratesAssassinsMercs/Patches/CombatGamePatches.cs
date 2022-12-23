@@ -25,7 +25,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         [HarmonyPatch(typeof(DestroyLanceObjective), "UpdateCounts")]
         public static class DestroyLanceObjective_UpdateCounts
         {
-            static bool Prepare() => false;
+            static bool Prepare() => false; // disabled
             public static void Postfix(DestroyLanceObjective __instance)
             {
                 if (ModState.HostileMercLanceTeamOverride != null)

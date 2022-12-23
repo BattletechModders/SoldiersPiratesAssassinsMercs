@@ -17,16 +17,24 @@ namespace SoldiersPiratesAssassinsMercs.Framework
         //these stay through play session
         public static List<string> simDisplayedFactions = new List<string>();
         public static List<string> simMercFactions = new List<string>();
-        public static ConcurrentDictionary<string, List<Classes.MercDialogueBucket>> DialogueStrings = new ConcurrentDictionary<string, List<Classes.MercDialogueBucket>>();
+        public static ConcurrentDictionary<string, List<Classes.MercDialogueBucket>> MercDialogueStrings = new ConcurrentDictionary<string, List<Classes.MercDialogueBucket>>();
+
+        public static ConcurrentDictionary<string, List<string>> GenericDialogueStrings =
+            new ConcurrentDictionary<string, List<string>>();
 
         //reset these after contract
-        public static TeamDefinition HostileMercTeamDefinition = new TeamDefinition("ddfd570d-f9e4-42f8-b2e8-671eb1e8f43a", "HostileMercenaryTeam");
-        public static TeamDefinition FriendlyMercTeamDefinition = new TeamDefinition("be68d8cb-6e32-401e-889e-c37cf10c0528", "FriendlyMercenaryTeam");
+        public static TeamDefinition HostileMercLanceTeamDefinition = new TeamDefinition(GlobalVars.HostileMercLanceTeamDefinitionGUID, "HostileMercenaryTeam");
+        public static TeamDefinition HostileAltLanceTeamDefinition = new TeamDefinition(GlobalVars.HostileAltLanceTeamDefinitionGUID, "HostileAltFactionTeam");
+        public static TeamDefinition FriendlyMercLanceTeamDefinition = new TeamDefinition(GlobalVars.FriendlyMercLanceTeamDefinitionGUID, "FriendlyMercenaryTeam");
+        public static TeamDefinition HostileToAllLanceTeamDefinition = new TeamDefinition(GlobalVars.HostileToAllLanceTeamDefinitionGUID, "HostileToAllPlanetTeam");
         public static TeamOverride MercFactionTeamOverride = null;
-        public static TeamOverride AltFactionTeamOverride = null;
+        public static TeamOverride AltFactionFactionTeamOverride = null;
+        public static TeamOverride PlanetAltFactionTeamOverride = null;
         public static TeamOverride OriginalTargetFactionTeamOverride = null;
-        public static bool ActiveContractShouldReplaceLanceWithMercs = false;
+        //public static bool ActiveContractShouldReplaceLanceWithMercs = false;
         public static TeamOverride HostileMercLanceTeamOverride = null;
+        public static TeamOverride HostileAltLanceTeamOverride = null;
+        public static TeamOverride HostileToAllLanceTeamOverride = null;
         public static bool ActiveContractShouldSpawnAlliedMercs = false;
         public static Classes.MercDialogueBucket ChosenDialogue = new Classes.MercDialogueBucket();
 
@@ -53,32 +61,50 @@ namespace SoldiersPiratesAssassinsMercs.Framework
 
        public static void InitializeDialogueStrings()
        {
-           using (StreamReader reader = new StreamReader($"{ModInit.modDir}/Dialogue.json"))
+           using (StreamReader reader = new StreamReader($"{ModInit.modDir}/MercDialogue.json"))
            {
                string jdata = reader.ReadToEnd(); //dictionary key is "personality attribute" associated with Dialogue.
-               ModState.DialogueStrings = JsonConvert.DeserializeObject<ConcurrentDictionary<string, List<Classes.MercDialogueBucket>>>(jdata);
-               ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initializing Dialogue");
+               ModState.MercDialogueStrings = JsonConvert.DeserializeObject<ConcurrentDictionary<string, List<Classes.MercDialogueBucket>>>(jdata);
+               ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initializing Merc Dialogue");
            }
-
-           foreach (var stringconfig in ModState.DialogueStrings)
+           foreach (var stringconfig in ModState.MercDialogueStrings)
            {
-               ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initialized Dialogue for attribute {stringconfig.Key}");
+               ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initialized Merc Dialogue for attribute {stringconfig.Key}");
                foreach (var config in stringconfig.Value)
                {
-                   ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initialized Dialogue {string.Join("; ", config.Dialogue)}");
+                   ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initialized Merc Dialogue {string.Join("; ", config.Dialogue)}");
                 }
+           }
+
+           using (StreamReader reader = new StreamReader($"{ModInit.modDir}/GenericDialogue.json"))
+           {
+               string jdata = reader.ReadToEnd(); //dictionary key is alternate faction (match key from AlternateFactionConfigs keys) associated with Dialogue.
+                ModState.GenericDialogueStrings = JsonConvert.DeserializeObject<ConcurrentDictionary<string, List<string>>>(jdata);
+               ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initializing other faction Dialogue");
+           }
+           foreach (var stringconfig in ModState.GenericDialogueStrings)
+           {
+               ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initialized other Dialogue for attribute {stringconfig.Key}");
+               foreach (var config in stringconfig.Value)
+               {
+                   ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initialized other Dialogue {string.Join("; ", config)}");
+               }
            }
        }
 
        public static void ResetStateAfterContract()
        { 
-           HostileMercTeamDefinition = new TeamDefinition("ddfd570d-f9e4-42f8-b2e8-671eb1e8f43a", "HostileMercenaryTeam"); 
-           FriendlyMercTeamDefinition = new TeamDefinition("be68d8cb-6e32-401e-889e-c37cf10c0528", "FriendlyMercenaryTeam"); 
-           MercFactionTeamOverride = null;
-           AltFactionTeamOverride = null;
+           HostileMercLanceTeamDefinition = new TeamDefinition(GlobalVars.HostileMercLanceTeamDefinitionGUID, "HostileMercenaryTeam"); 
+           FriendlyMercLanceTeamDefinition = new TeamDefinition(GlobalVars.FriendlyMercLanceTeamDefinitionGUID, "FriendlyMercenaryTeam"); 
+           HostileToAllLanceTeamDefinition = new TeamDefinition(GlobalVars.HostileToAllLanceTeamDefinitionGUID, "HostilePlanetTeam");
+            MercFactionTeamOverride = null;
+           AltFactionFactionTeamOverride = null;
+           PlanetAltFactionTeamOverride = null;
            OriginalTargetFactionTeamOverride = null;
-           ActiveContractShouldReplaceLanceWithMercs = false;
+           //ActiveContractShouldReplaceLanceWithMercs = false;
            HostileMercLanceTeamOverride = null;
+           HostileToAllLanceTeamOverride = null;
+           HostileAltLanceTeamOverride = null;
            ActiveContractShouldSpawnAlliedMercs = false;
            ChosenDialogue = new Classes.MercDialogueBucket();
            RoundsInCombat = 0;
