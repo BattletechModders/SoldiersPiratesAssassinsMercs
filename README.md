@@ -174,10 +174,6 @@ example GenericDialogue.json
 
 So how does it all work together? We'll use the above settings as a guide. 
 
-### Can multiple replacements happen at once?
-
-Short answer is no. The long answer is also no, just with extra steps. The order all of these replacements are checked is as follows, and the first "success" stops the checks. 
-
 ### Are we going to replace something with mercs?
 
 Well we're at least gonna try. `BaseReplaceChance` in OpforReplacementConfig is 0, so mercs will never replace the entire opfor, but `BaseReplaceChance` in `MercLanceAdditionConfig` is 1.0, so mercs will always replace MC AdditionalLances *unless* you're facing Locals, in which case they would not be replaced due to `FactionsReplaceOverrides`. ~~We don't have any contracts or contract types blacklisted, so onwards.~~
@@ -205,3 +201,14 @@ The bribed merc units should despawn without appearing as salvage.
 
 ### Boo, it didn't worked?
 Are you saying these mercenaries just *took* your money and didn't leave? Unbelievable. Guess you'll have to destroy them, huh.
+
+### Can multiple replacements happen at once?
+
+Short answer is no. The long answer is also no, just with extra steps. The order all of these replacements are checked is as follows, and the first "yes" stops all subsequent checks. As previously stated, **the only time you can attempt to bribe is if MissionControl lances have been replaced with mercs from MercLanceAdditionConfig**
+
+1. Are we replacing entire opfor with planet-specific one from PlanetFactionConfigs?
+2. Are we replacing entire opfor with alternate faction from AlternateFactionConfigs?
+3. Are we replacing entire opfor with mercs from OpforReplacementConfig?
+4. Are we replacing MissionControl AdditionalLances with planet-specific one from PlanetFactionConfigs?
+5. Are we replacing MissionControl AdditionalLances with alternate faction from AlternateFactionConfigs?
+6. Are we replacing MissionControl AdditionalLances with mercs from MercLanceAdditionConfig?
