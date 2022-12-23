@@ -9,29 +9,36 @@ mod.json settings:
 "Settings": {
 		"enableDebug": true,
 		"enableTrace": true,
+		"BlacklistedContractTypesAndIDs": [],
 		"OpforReplacementConfig": {
 			"BaseReplaceChance": 0.0,
 			"FactionsReplaceOverrides": {
 				"Locals": 0.0
-			},
-			"BlacklistContractTypes": [],
-			"BlacklistContractIDs": []
+			}
 		},
 		"MercLanceAdditionConfig": {
 			"BaseReplaceChance": 1.0,
 			"FactionsReplaceOverrides": {
 				"Locals": 0.0
 			},
-			"BlacklistContractTypes": [],
-			"BlacklistContractIDs": [],
 			"MercFactionReputationFactor": 0.5
 		},
 		"AlternateFactionConfigs": {
 			"Liao": {
-				"FactionReplaceChance": 1.0,
+				"FactionReplaceChance": 0.4,
+				"FactionMCAdditionalLanceReplaceChance": 1.0,
 				"AlternateOpforWeights": {
 					"KellHounds": 5,
 					"Mercenaries": 10
+				}
+			}
+		},
+		"PlanetFactionConfigs": {
+			"starsystemdef_Ichlangis": {
+				"FactionReplaceChance": 0.3,
+				"FactionMCAdditionalLanceReplaceChance": 1.0,
+				"AlternateOpforWeights": {
+					"EmeraldDawn": 5
 				}
 			}
 		},
@@ -55,19 +62,24 @@ mod.json settings:
 
 `enableDebug` and `enableTrace` - bools, enable debug and trace logging, respectively. recommend leaving debug log disabled and trace enabled (at least for initial config)
 
+`BlacklistedContractTypesAndIDs` - List<string> : contract types and specific contract IDs which will never replace opfor anyone. effectively disables SPAM for these contracts
+
 `OpforReplacementConfig` and `MercLanceAdditionConfig` - configs for whole-opfor and MC AdditionalLances faction replacement, respectively.
 
 * `BaseReplaceChance` - baseline chance for any opfor to be replaced by a valid merc faction. uses 0 - 1 range; 0 is never, 1 is guaranteed.
 * `FactionsReplaceOverrides` - list of faction-specific overrides for the replacement chance. i.e, override Locals and Wobbies to hire mercs more often and override clans to never use them. uses 0 - 1 range; 0 is never, 1 is guaranteed.
-* `BlacklistContractTypes` and `BlacklistContractIDs` - lists of contract types and specific contract IDs which will never replace opfor with mercs.
+* ~~`BlacklistContractTypes` and `BlacklistContractIDs` -  lists of contract types and specific contract IDs which will never replace opfor with mercs.~~ DEPRECATED, use BlacklistedContractTypesAndIDs above
 * `MercFactionReputationFactor` (in MercLanceAdditionConfig only) - custom reputation loss multiplier for hostile merc faction when they only replaced MC AdditionalLances (rep loss for original target faction is always maintained, and when whole opfor is replaced by mercs, both merc faction and contract target faction lose rep as normal). Mercenary faction reputation isn't hooked to anything besides regular rep system, but its there if you need it.
 
 `AlternateFactionConfigs` - Dictionary of configs for potential alternate (non-merc!) factions that have a chance to replace the original target faction. Config things like 2nd line units, specific regiments, etc here. These factions *must* be real, valid factions. They have to have a FactionDef, and be defined in Faction.json. They do *not* have to be set to gain reputation, nor do they need to be IsCareerStartingDisplayFaction and display in the Cpt Quarters reputation screen. The KEYS for this dictionary are the faction Names for the configured alternate factions, i.e KellHounds (same field as Liao, Davion, Locals, etc). Using the above settings, Liao will always be replaced by a faction from AlternateOpforWeights due to FactionReplaceChance being 1.0. Given the above, Liao is twice as likely to be replaced by the generic Mercenaries faction as by the Kell Hounds.
 
 * `FactionReplaceChance` - float, probability that original target faction will be replaced by one of these
 * `AlternateOpforWeights` - dictionary <string, int> - faction Name and weight for different factions if replacement (from above) is happening
+* `FactionMCAdditionalLanceReplaceChance` - float, probability that MissionControl AdditionalLances (if any) will be replaced with alt faction
  
- `MercFactionConfigs` - Dictionary of configs for Merc Faction behavior. Merc factions *must* be real, valid factions. They have to have a FactionDef, and be defined in Faction.json. In particular, Faction.json must have them with IsRealFaction and IsMercenary set to true. They do *not* have to be set to gain reputation, nor do they need to be IsCareerStartingDisplayFaction and display in the Cpt Quarters reputation screen.
+`PlanetFactionConfigs` - Dictionary of configs for alternate factions specific to certain planets. The KEYS for this dictionary are starsystem IDs, e.g. `starsystemdef_Ichlangis`. Otherwise, config is identical to AlternateFactionConfigs.
+ 
+`MercFactionConfigs` - Dictionary of configs for Merc Faction behavior. Merc factions *must* be real, valid factions. They have to have a FactionDef, and be defined in Faction.json. In particular, Faction.json must have them with IsRealFaction and IsMercenary set to true. They do *not* have to be set to gain reputation, nor do they need to be IsCareerStartingDisplayFaction and display in the Cpt Quarters reputation screen.
  
  The KEYS for this dictionary are the faction Names for the configured merc factions, i.e KellHounds (same field as Liao, Davion, Locals, etc). If a merc faction exists but is missing from this dictionary, it will not be used by SPAM!:
  
@@ -81,10 +93,9 @@ mod.json settings:
 
 `BribeCostBaselineMulti` - baseline multiplier for calculation of bribes; multiplied by the total cost (battlevalue) of the mercs you're trying to bribe.
 
+**RENAMED to MercDialogue.json**, consists of a Dictionary, where the KEYS are PersonalityAttributes you've decided to use for your merc factions. They can be literally whatever you want; there just needs to be a match between the PersonalityAttributes in mod.json and the KEYS in Dialogue.json. They also don't have to be all caps, but it looks official and important that way. Each VALUE is a list of something that I've decided to call a MercDialogueBucket. Because buckets are great.
 
-Dialogue.json consists of a Dictionary, where the KEYS are PersonalityAttributes you've decided to use for your merc factions. They can be literally whatever you want; there just needs to be a match between the PersonalityAttributes in mod.json and the KEYS in Dialogue.json. They also don't have to be all caps, but it looks official and important that way. Each VALUE is a list of something that I've decided to call a MercDialogueBucket. Because buckets are great.
-
-Example Dialogue.json:
+Example MercDialogue.json:
 ```
 {
 	"PROFESSIONAL": [
@@ -146,11 +157,26 @@ Example Dialogue.json:
 
 If multiple dialogue buckets are usable according to the Min/Max TimesEncountered requirements, a bucket will be chosen at random (the bucket chosen at contract start also then supplies the success/failure dialogue for bribes, if applicable).
 
+Similarly, a new file `GenericDialogue.json` contains configuration for dialogue for factions used by PlanetFactionConfigs and AlternateFactionConfigs. This is a simpler system than the merc dialogue;' if PlanetFactionConfigs or AlternateFactionConfigs calls for a faction, GenericDialogue.json is searched to find a matching faction. if found, a dialogue string is chosen at random. **there is no possibility of bribing Alt or Planet factions, hence the siimpler system**
+
+example GenericDialogue.json
+```
+{
+	"EmeraldDawn": [
+		"RESISTANCE IS USELESS",
+		"WE ARE THE VANGAURD OF YOUR DESTRUCTION"
+	],
+	"KellHounds": [
+		"baby shark do do dodo dodo"
+	]
+}
+```
+
 So how does it all work together? We'll use the above settings as a guide. 
 
 ### Are we going to replace something with mercs?
 
-Well we're at least gonna try. `BaseReplaceChance` in OpforReplacementConfig is 0, so mercs will never replace the entire opfor, but `BaseReplaceChance` in `MercLanceAdditionConfig` is 1.0, so mercs will always replace MC AdditionalLances *unless* you're facing Locals, in which case they would not be replaced due to `FactionsReplaceOverrides`. We don't have any contracts or contract types blacklisted, so onwards.
+Well we're at least gonna try. `BaseReplaceChance` in OpforReplacementConfig is 0, so mercs will never replace the entire opfor, but `BaseReplaceChance` in `MercLanceAdditionConfig` is 1.0, so mercs will always replace MC AdditionalLances *unless* you're facing Locals, in which case they would not be replaced due to `FactionsReplaceOverrides`. ~~We don't have any contracts or contract types blacklisted, so onwards.~~
 
 ### What mercs are we replacing them with?
 The only merc faction configured is the Kell Hounds, so AppearanceWeight doesn't matter, but it would if we had multiple merc factions configured. For this example, it's gonna be KellHounds. Unless you're facing Liao, in which case nothing will happen.
