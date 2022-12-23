@@ -77,7 +77,7 @@ mod.json settings:
 * `AlternateOpforWeights` - dictionary <string, int> - faction Name and weight for different factions if replacement (from above) is happening
 * `FactionMCAdditionalLanceReplaceChance` - float, probability that MissionControl AdditionalLances (if any) will be replaced with alt faction
  
-`PlanetFactionConfigs` - Dictionary of configs for alternate factions specific to certain planets. The KEYS for this dictionary are starsystem IDs, e.g. `starsystemdef_Ichlangis`. Otherwise, config is identical to AlternateFactionConfigs.
+`PlanetFactionConfigs` - Dictionary of configs for alternate factions specific to certain planets. The KEYS for this dictionary are starsystem IDs, e.g. `starsystemdef_Ichlangis`. **Important** if a faction is chosen to replace a MissionControl AdditionalLance, it will spawn as HOSTILE TO ALL, basically turning the contract into a 3 way battle. Otherwise, config is identical to AlternateFactionConfigs.
  
 `MercFactionConfigs` - Dictionary of configs for Merc Faction behavior. Merc factions *must* be real, valid factions. They have to have a FactionDef, and be defined in Faction.json. In particular, Faction.json must have them with IsRealFaction and IsMercenary set to true. They do *not* have to be set to gain reputation, nor do they need to be IsCareerStartingDisplayFaction and display in the Cpt Quarters reputation screen.
  
@@ -173,6 +173,10 @@ example GenericDialogue.json
 ```
 
 So how does it all work together? We'll use the above settings as a guide. 
+
+### Can multiple replacements happen at once?
+
+Short answer is no. The long answer is also no, just with extra steps. The order all of these replacements are checked is as follows, and the first "success" stops the checks. 
 
 ### Are we going to replace something with mercs?
 
