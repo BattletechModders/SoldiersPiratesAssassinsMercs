@@ -270,15 +270,15 @@ namespace SoldiersPiratesAssassinsMercs.Patches
             {
                 if (ModState.PlanetAltFactionTeamOverride.TeamOverride != null)
                 {
-                    __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.PlanetAltFactionTeamOverride);
+                    __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.PlanetAltFactionTeamOverride.TeamOverride);
                 }
                 else if (ModState.AltFactionFactionTeamOverride.TeamOverride != null)
                 {
-                    __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.AltFactionFactionTeamOverride);
+                    __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.AltFactionFactionTeamOverride.TeamOverride);
                 }
                 else if (ModState.MercFactionTeamOverride.TeamOverride != null)
                 {
-                    __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.MercFactionTeamOverride);
+                    __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.MercFactionTeamOverride.TeamOverride);
                 }
             }
         }
@@ -296,15 +296,15 @@ namespace SoldiersPiratesAssassinsMercs.Patches
             {
                 if (ModState.PlanetAltFactionTeamOverride.TeamOverride != null)
                 {
-                    __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.PlanetAltFactionTeamOverride);
+                    __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.PlanetAltFactionTeamOverride.TeamOverride);
                 }
                 else if (ModState.AltFactionFactionTeamOverride.TeamOverride != null)
                 {
-                    __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.AltFactionFactionTeamOverride);
+                    __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.AltFactionFactionTeamOverride.TeamOverride);
                 }
                 else if (ModState.MercFactionTeamOverride.TeamOverride != null)
                 {
-                    __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.MercFactionTeamOverride);
+                    __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.MercFactionTeamOverride.TeamOverride);
                 }
             }
         }
