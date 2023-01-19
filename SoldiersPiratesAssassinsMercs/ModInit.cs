@@ -1,14 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using BattleTech;
 using Harmony;
-using IRBTModUtils;
 using IRBTModUtils.Logging;
-using Microsoft.Win32;
 using Newtonsoft.Json;
 using SoldiersPiratesAssassinsMercs.Framework;
 using ModState = SoldiersPiratesAssassinsMercs.Framework.ModState;

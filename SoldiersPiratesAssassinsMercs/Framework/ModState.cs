@@ -2,13 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using BattleTech;
 using BattleTech.Framework;
-using IRBTModUtils;
 using Newtonsoft.Json;
+using static SoldiersPiratesAssassinsMercs.Framework.Classes;
 
 namespace SoldiersPiratesAssassinsMercs.Framework
 {
@@ -27,14 +24,14 @@ namespace SoldiersPiratesAssassinsMercs.Framework
         public static TeamDefinition HostileAltLanceTeamDefinition = new TeamDefinition(GlobalVars.HostileAltLanceTeamDefinitionGUID, "HostileAltFactionTeam");
         public static TeamDefinition FriendlyMercLanceTeamDefinition = new TeamDefinition(GlobalVars.FriendlyMercLanceTeamDefinitionGUID, "FriendlyMercenaryTeam");
         public static TeamDefinition HostileToAllLanceTeamDefinition = new TeamDefinition(GlobalVars.HostileToAllLanceTeamDefinitionGUID, "HostileToAllPlanetTeam");
-        public static TeamOverride MercFactionTeamOverride = null;
-        public static TeamOverride AltFactionFactionTeamOverride = null;
-        public static TeamOverride PlanetAltFactionTeamOverride = null;
         public static TeamOverride OriginalTargetFactionTeamOverride = null;
+        public static SPAMTeamOverride MercFactionTeamOverride = new SPAMTeamOverride();
+        public static SPAMTeamOverride AltFactionFactionTeamOverride = new SPAMTeamOverride();
+        public static SPAMTeamOverride PlanetAltFactionTeamOverride = new SPAMTeamOverride();
         //public static bool ActiveContractShouldReplaceLanceWithMercs = false;
-        public static TeamOverride HostileMercLanceTeamOverride = null;
-        public static TeamOverride HostileAltLanceTeamOverride = null;
-        public static TeamOverride HostileToAllLanceTeamOverride = null;
+        public static SPAMTeamOverride HostileMercLanceTeamOverride = new SPAMTeamOverride();
+        public static SPAMTeamOverride HostileAltLanceTeamOverride = new SPAMTeamOverride();
+        public static SPAMTeamOverride HostileToAllLanceTeamOverride = new SPAMTeamOverride();
         public static bool ActiveContractShouldSpawnAlliedMercs = false;
         public static Classes.MercDialogueBucket ChosenDialogue = new Classes.MercDialogueBucket();
 
@@ -97,14 +94,14 @@ namespace SoldiersPiratesAssassinsMercs.Framework
            HostileMercLanceTeamDefinition = new TeamDefinition(GlobalVars.HostileMercLanceTeamDefinitionGUID, "HostileMercenaryTeam"); 
            FriendlyMercLanceTeamDefinition = new TeamDefinition(GlobalVars.FriendlyMercLanceTeamDefinitionGUID, "FriendlyMercenaryTeam"); 
            HostileToAllLanceTeamDefinition = new TeamDefinition(GlobalVars.HostileToAllLanceTeamDefinitionGUID, "HostilePlanetTeam");
-            MercFactionTeamOverride = null;
-           AltFactionFactionTeamOverride = null;
-           PlanetAltFactionTeamOverride = null;
+           MercFactionTeamOverride = new SPAMTeamOverride();
+           AltFactionFactionTeamOverride = new SPAMTeamOverride();
+           PlanetAltFactionTeamOverride = new SPAMTeamOverride();
            OriginalTargetFactionTeamOverride = null;
            //ActiveContractShouldReplaceLanceWithMercs = false;
-           HostileMercLanceTeamOverride = null;
-           HostileToAllLanceTeamOverride = null;
-           HostileAltLanceTeamOverride = null;
+           HostileMercLanceTeamOverride = new SPAMTeamOverride();
+           HostileToAllLanceTeamOverride = new SPAMTeamOverride();
+           HostileAltLanceTeamOverride = new SPAMTeamOverride();
            ActiveContractShouldSpawnAlliedMercs = false;
            ChosenDialogue = new Classes.MercDialogueBucket();
            RoundsInCombat = 0;

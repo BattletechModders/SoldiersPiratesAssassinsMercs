@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BattleTech;
 using BattleTech.Framework;
 using Harmony;
 using MissionControl.Data;
@@ -21,9 +17,9 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         {
             public static bool Prefix(AddTargetLanceWithDestroyObjectiveBatch __instance, EncounterRules encounterRules, string orientationTargetKey, SceneManipulationLogic.LookDirection lookDirection, float mustBeBeyondDistance, float mustBeWithinDistance, string objectiveName, int priority, bool isPrimaryObjective, bool displayToUser, bool showObjectiveOnLanceDetected, bool excludeFromAutocomplete, List<string> lanceTags, MLanceOverride manuallySpecifiedLance = null)
             {
-                if (ModState.HostileToAllLanceTeamOverride != null)
+                if (ModState.HostileToAllLanceTeamOverride.TeamOverride != null)
                 {
-                    var objectiveName2 = $"Destroy {ModState.HostileToAllLanceTeamOverride.FactionDef.Demonym} Lance";
+                    var objectiveName2 = $"Destroy {ModState.HostileToAllLanceTeamOverride.TeamOverride.FactionDef.Demonym} Lance";
                     ModInit.modLog?.Trace?.Write(
                         $"[AddTargetLanceWithDestroyObjectiveBatch_Constructor] Running SPAM for AddLance. Contract should be spawning support lances?; debug objective name :{objectiveName2} vs original {objectiveName}");
                     int numberOfUnitsInLance = 4;
@@ -55,9 +51,9 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     encounterRules.ObjectReferenceQueue.Add(spawnerName);
                     return false;
                 }
-                else if (ModState.HostileAltLanceTeamOverride != null)
+                else if (ModState.HostileAltLanceTeamOverride.TeamOverride != null)
                 {
-                    var objectiveName2 = $"Destroy {ModState.HostileAltLanceTeamOverride.FactionDef.Demonym} Lance";
+                    var objectiveName2 = $"Destroy {ModState.HostileAltLanceTeamOverride.TeamOverride.FactionDef.Demonym} Lance";
                     ModInit.modLog?.Trace?.Write(
                         $"[AddTargetLanceWithDestroyObjectiveBatch_Constructor] Running SPAM for AddLanceToMercTeam. Contract should be spawning support lances?debug objective name :{objectiveName2} vs original {objectiveName}");
                     int numberOfUnitsInLance = 4;
@@ -90,9 +86,9 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     return false;
                 }
 
-                else if (ModState.HostileMercLanceTeamOverride != null)
+                else if (ModState.HostileMercLanceTeamOverride.TeamOverride != null)
                 {
-                    var objectiveName2 = $"Destroy {ModState.HostileMercLanceTeamOverride.FactionDef.Demonym} Lance"; ModInit.modLog?.Trace?.Write(
+                    var objectiveName2 = $"Destroy {ModState.HostileMercLanceTeamOverride.TeamOverride.FactionDef.Demonym} Lance"; ModInit.modLog?.Trace?.Write(
                         $"[AddTargetLanceWithDestroyObjectiveBatch_Constructor] Running SPAM for AddLanceToMercTeam. Contract should be spawning support lances?debug objective name :{objectiveName2} vs original {objectiveName}");
                     int numberOfUnitsInLance = 4;
                     string lanceGuid = Guid.NewGuid().ToString();
@@ -135,28 +131,28 @@ namespace SoldiersPiratesAssassinsMercs.Patches
             {
                 if (__result == null)
                 {
-                    if (ModState.HostileToAllLanceTeamOverride != null)
+                    if (ModState.HostileToAllLanceTeamOverride.TeamOverride != null)
                     {
                         var hostileAllTeamOverride = ModState.HostileToAllLanceTeamOverride;
-                        if (hostileAllTeamOverride.IsLanceInTeam(lanceGuid))
+                        if (hostileAllTeamOverride.TeamOverride.IsLanceInTeam(lanceGuid))
                         {
-                            __result = hostileAllTeamOverride;
+                            __result = hostileAllTeamOverride.TeamOverride;
                         }
                     }
-                    else if (ModState.HostileAltLanceTeamOverride != null)
+                    else if (ModState.HostileAltLanceTeamOverride.TeamOverride != null)
                     {
                         var altTeamOverride = ModState.HostileAltLanceTeamOverride;
-                        if (altTeamOverride.IsLanceInTeam(lanceGuid))
+                        if (altTeamOverride.TeamOverride.IsLanceInTeam(lanceGuid))
                         {
-                            __result = altTeamOverride;
+                            __result = altTeamOverride.TeamOverride;
                         }
                     }
-                    else if (ModState.HostileMercLanceTeamOverride != null)
+                    else if (ModState.HostileMercLanceTeamOverride.TeamOverride != null)
                     {
                         var mercTeamOverride = ModState.HostileMercLanceTeamOverride;
-                        if (mercTeamOverride.IsLanceInTeam(lanceGuid))
+                        if (mercTeamOverride.TeamOverride.IsLanceInTeam(lanceGuid))
                         {
-                            __result = mercTeamOverride;
+                            __result = mercTeamOverride.TeamOverride;
                         }
                     }
                 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BattleTech;
+﻿using BattleTech;
 using BattleTech.Designed;
 using Harmony;
 using MissionControl.Logic;
@@ -28,7 +23,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
             static bool Prepare() => false; // disabled
             public static void Postfix(DestroyLanceObjective __instance)
             {
-                if (ModState.HostileMercLanceTeamOverride != null)
+                if (ModState.HostileMercLanceTeamOverride.TeamOverride != null)
                 {
                     var targetUnits = __instance.GetTargetUnits();
                     var despawnedActors= targetUnits.FindAll(x => x is Mech mech && mech.WasDespawned && x.EncounterTags.Contains(Tags.ADDITIONAL_LANCE));

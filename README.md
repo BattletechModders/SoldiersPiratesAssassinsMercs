@@ -6,7 +6,7 @@ This mod breathes a little life into the mercenaries of the Inner Sphere, allowi
 
 mod.json settings:
 ```
-"Settings": {
+	"Settings": {
 		"enableDebug": true,
 		"enableTrace": true,
 		"BlacklistedContractTypesAndIDs": [],
@@ -25,26 +25,38 @@ mod.json settings:
 		},
 		"AlternateFactionConfigs": {
 			"Liao": {
-				"FactionReplaceChance": 0.4,
-				"FactionMCAdditionalLanceReplaceChance": 1.0,
-				"AlternateOpforWeights": {
-					"KellHounds": 5,
-					"Mercenaries": 10
-				}
+				"FactionReplaceChance": 0.0,
+				"FactionMCAdditionalLanceReplaceChance": 0.0,
+				"AlternateOpforWeights": [
+					{
+						"FactionName": "KellHounds",
+						"FactionWeight": 5,
+						"FactionFallback": "ClanJadeFalcon"
+					},
+					{
+						"FactionName": "EmeraldDawn",
+						"FactionWeight": 10,
+						"FactionFallback": "Liao"
+					}
+				]
 			}
 		},
 		"PlanetFactionConfigs": {
 			"starsystemdef_Ichlangis": {
-				"FactionReplaceChance": 0.3,
-				"FactionMCAdditionalLanceReplaceChance": 1.0,
-				"AlternateOpforWeights": {
-					"EmeraldDawn": 5
-				}
+				"FactionReplaceChance": 0.0,
+				"FactionMCAdditionalLanceReplaceChance": 0.0,
+				"AlternateOpforWeights": [
+					{
+						"FactionName": "EmeraldDawn",
+						"FactionWeight": 10,
+						"FactionFallback": "Liao"
+					}
+				]
 			}
 		},
 		"MercFactionConfigs": {
-			"KellHounds": {
-				"MercFactionName": "KellHounds",
+			"Blahaj": {
+				"MercFactionFallbackTag": "ClanJadeFalcon",
 				"AppearanceWeight": 1,
 				"EmployerBlacklist": [
 					"Liao"
@@ -57,7 +69,7 @@ mod.json settings:
 		},
 		"FallbackUnitFactionTag": "mercenaries",
 		"BribeCostBaselineMulti": 0.01
-	},
+	}
 ```
 
 `enableDebug` and `enableTrace` - bools, enable debug and trace logging, respectively. recommend leaving debug log disabled and trace enabled (at least for initial config)
@@ -73,9 +85,14 @@ mod.json settings:
 
 `AlternateFactionConfigs` - Dictionary of configs for potential alternate (non-merc!) factions that have a chance to replace the original target faction. Config things like 2nd line units, specific regiments, etc here. These factions *must* be real, valid factions. They have to have a FactionDef, and be defined in Faction.json. They do *not* have to be set to gain reputation, nor do they need to be IsCareerStartingDisplayFaction and display in the Cpt Quarters reputation screen. The KEYS for this dictionary are the faction Names for the configured alternate factions, i.e KellHounds (same field as Liao, Davion, Locals, etc). Using the above settings, Liao will always be replaced by a faction from AlternateOpforWeights due to FactionReplaceChance being 1.0. Given the above, Liao is twice as likely to be replaced by the generic Mercenaries faction as by the Kell Hounds.
 
+**NOTE** as of v1.1.0.0 AlternateOpforWeights configuration has changed!
+
 * `FactionReplaceChance` - float, probability that original target faction will be replaced by one of these
-* `AlternateOpforWeights` - dictionary <string, int> - faction Name and weight for different factions if replacement (from above) is happening
 * `FactionMCAdditionalLanceReplaceChance` - float, probability that MissionControl AdditionalLances (if any) will be replaced with alt faction
+* `AlternateOpforWeights` - list of new class FactionWeightAndFallback. Each entry in list must have:
+*-- 	`FactionName` - string, name of faction from Faction.json (i.e EmeraldDawn)
+*-- 	`FactionWeight` - integer weight for this merc faction to be used for replacement (relative to other configured factions in AlternateOpforWeights)
+*-- 	`FactionFallback` - primary fallback unit tag to use if the unit replacer cannot find a unit that matches the lance/unit selector tag for the chosen alternate faction. If this also fails, generic FallbackUnitFactionTag below will be used.
  
 `PlanetFactionConfigs` - Dictionary of configs for alternate factions specific to certain planets. The KEYS for this dictionary are starsystem IDs, e.g. `starsystemdef_Ichlangis`. **Important** if a faction is chosen to replace a MissionControl AdditionalLance, it will spawn as HOSTILE TO ALL, basically turning the contract into a 3 way battle. Otherwise, config is identical to AlternateFactionConfigs.
  
@@ -83,13 +100,14 @@ mod.json settings:
  
  The KEYS for this dictionary are the faction Names for the configured merc factions, i.e KellHounds (same field as Liao, Davion, Locals, etc). If a merc faction exists but is missing from this dictionary, it will not be used by SPAM!:
  
-* `MercFactionName` - string, should be same as the KEY; the faction Name.
+* ~~`MercFactionName` - string, should be same as the KEY; the faction Name.~~ deprecated, KEY should just be faction Name (from Faction.json), i.e Liao, KellHounds, EdCorbu, etc
+* `MercFactionFallbackTag` - primary fallback unit tag to use if the unit replacer cannot find a unit that matches the lance/unit selector tag for the chosen merc faction. If this also fails, generic FallbackUnitFactionTag below will be used.
 * `AppearanceWeight` - integer weight for this merc faction to be used for replacement (relative to other configured merc factions)
 * `EmployerBlacklist` - list, strings; "employer" blacklist for merc faction. I.e KellHounds will never replace (be hired) by Liao.
 * `UnitRating` - integer MRB unit rating for the merc faction. Calculates based on a 13 point system, as MRB ratings are given as an A+ through D- scale. We've added an F for NotRated. Merc Units that are NotRated get a 1, D- gets 2, A+ gets 13.
 * `PersonalityAttributes` - list of PersonalityAttributes that will determine the "pool" of randomly generated dialogue pulled from the Dialogue.json
 
-`FallbackUnitFactionTag` - fallback unit tag to use if the unit replacer cannot find a unit that matches the lance/unit selector tag for the chosen merc faction. Best to use your most "generic" mercenary faction tag, but de-capitalized. Really just to prevent fallback cicadas while hopefully still being merc-ey.
+`FallbackUnitFactionTag` - final fallback unit tag to use if the unit replacer cannot find a unit that matches the lance/unit selector tag for the chosen merc faction. Best to use your most "generic" mercenary faction tag, but de-capitalized. Really just to prevent fallback cicadas while hopefully still being merc-ey.
 
 `BribeCostBaselineMulti` - baseline multiplier for calculation of bribes; multiplied by the total cost (battlevalue) of the mercs you're trying to bribe.
 

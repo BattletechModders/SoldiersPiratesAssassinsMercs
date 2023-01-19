@@ -5,9 +5,6 @@ using MissionControl.Data;
 using MissionControl.Logic;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using DataManager = MissionControl.DataManager;
 
@@ -28,10 +25,10 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             }
             public override void Run(RunPayload payload)
             {
-                ModInit.modLog?.Trace?.Write($"[AddLanceToAltTeam - MC OVERRIDE] Adding lance to alt team {ModState.AltFactionFactionTeamOverride.FactionValue.Name}");
+                ModInit.modLog?.Trace?.Write($"[AddLanceToAltTeam - MC OVERRIDE] Adding lance to alt team {ModState.AltFactionFactionTeamOverride.TeamOverride.FactionValue.Name}");
                 MissionControl.Main.Logger.Log("[SPAM - AddLanceToAltTeam - SPAM] Adding lance to alt team");
                 ContractOverride contractOverride = ((ContractOverridePayload)payload).ContractOverride;
-                TeamOverride targetTeam = ModState.AltFactionFactionTeamOverride;
+                TeamOverride targetTeam = ModState.AltFactionFactionTeamOverride.TeamOverride;
                 LanceOverride lanceOverride = (this.manuallySpecifiedLance == null) ? SelectAltLanceOverride("enemy").Copy() : this.manuallySpecifiedLance.Copy();
                 lanceOverride.name = $"Lance_Enemy_OpposingForce_{this.lanceGuid}";
                 if (this.unitGuids.Count > 4)
@@ -58,8 +55,8 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 targetTeam.lanceOverrideList.Add(lanceOverride);
                 ModInit.modLog?.Trace?.Write($"[AddLanceToAltTeam - MC OVERRIDE] Added {lanceOverride.lanceDefId} to lanceOverrideList override list");
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
-                ModState.AltFactionFactionTeamOverride.RunMadLibs(contractOverride.contract, sim.DataManager);
-                ModState.AltFactionFactionTeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, contractOverride.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
+                ModState.AltFactionFactionTeamOverride.TeamOverride.RunMadLibs(contractOverride.contract, sim.DataManager);
+                ModState.AltFactionFactionTeamOverride.TeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, contractOverride.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
 
             }
 
@@ -68,7 +65,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 string biome = Enum.GetName(typeof(Biome.BIOMESKIN), MissionControl.MissionControl.Instance.CurrentContract.ContractBiome);
                 biome = biome.Capitalise();
                 string contractType = MissionControl.MissionControl.Instance.CurrentContractType;
-                FactionDef faction = FactionDef.GetFactionDefByEnum(UnityGameInstance.BattleTechGame.DataManager, ModState.AltFactionFactionTeamOverride.FactionValue.Name);
+                FactionDef faction = FactionDef.GetFactionDefByEnum(UnityGameInstance.BattleTechGame.DataManager, ModState.AltFactionFactionTeamOverride.TeamOverride.FactionValue.Name);
                 string factionName = (faction == null) ? "UNKNOWN" : faction.Name;
                 int factionRep = (MissionControl.MissionControl.Instance.IsSkirmish()) ? 0 : UnityGameInstance.Instance.Game.Simulation.GetRawReputation(faction?.FactionValue);
                 int mrbRating = (MissionControl.MissionControl.Instance.IsSkirmish()) ? 0 : UnityGameInstance.Instance.Game.Simulation.GetRawReputation(FactionEnumeration.GetMercenaryReviewBoardFactionValue());
@@ -121,10 +118,10 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             }
             public override void Run(RunPayload payload)
             {
-                ModInit.modLog?.Trace?.Write($"[AddLanceToAltTeam - MC OVERRIDE] Adding lance to hostile to all team {ModState.HostileToAllLanceTeamOverride.FactionValue.Name}");
+                ModInit.modLog?.Trace?.Write($"[AddLanceToAltTeam - MC OVERRIDE] Adding lance to hostile to all team {ModState.HostileToAllLanceTeamOverride.TeamOverride.FactionValue.Name}");
                 MissionControl.Main.Logger.Log("[SPAM - AddLanceToAltTeam - SPAM] Adding lance to hostile to all team");
                 ContractOverride contractOverride = ((ContractOverridePayload)payload).ContractOverride;
-                TeamOverride targetTeam = ModState.HostileToAllLanceTeamOverride;
+                TeamOverride targetTeam = ModState.HostileToAllLanceTeamOverride.TeamOverride;
                 LanceOverride lanceOverride = (this.manuallySpecifiedLance == null) ? SelectHostileToAllLanceOverride("enemy").Copy() : this.manuallySpecifiedLance.Copy();
                 lanceOverride.name = $"Lance_Enemy_OpposingForce_{this.lanceGuid}";
                 if (this.unitGuids.Count > 4)
@@ -151,8 +148,8 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 targetTeam.lanceOverrideList.Add(lanceOverride);
                 ModInit.modLog?.Trace?.Write($"[AddLanceToAltTeam - MC OVERRIDE] Added {lanceOverride.lanceDefId} to lanceOverrideList override list");
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
-                ModState.HostileToAllLanceTeamOverride.RunMadLibs(contractOverride.contract, sim.DataManager);
-                ModState.HostileToAllLanceTeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, contractOverride.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
+                ModState.HostileToAllLanceTeamOverride.TeamOverride.RunMadLibs(contractOverride.contract, sim.DataManager);
+                ModState.HostileToAllLanceTeamOverride.TeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, contractOverride.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
             }
 
             public MLanceOverride SelectHostileToAllLanceOverride(string teamType)
@@ -160,7 +157,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 string biome = Enum.GetName(typeof(Biome.BIOMESKIN), MissionControl.MissionControl.Instance.CurrentContract.ContractBiome);
                 biome = biome.Capitalise();
                 string contractType = MissionControl.MissionControl.Instance.CurrentContractType;
-                FactionDef faction = FactionDef.GetFactionDefByEnum(UnityGameInstance.BattleTechGame.DataManager, ModState.HostileToAllLanceTeamOverride.FactionValue.Name);
+                FactionDef faction = FactionDef.GetFactionDefByEnum(UnityGameInstance.BattleTechGame.DataManager, ModState.HostileToAllLanceTeamOverride.TeamOverride.FactionValue.Name);
                 string factionName = (faction == null) ? "UNKNOWN" : faction.Name;
                 int factionRep = (MissionControl.MissionControl.Instance.IsSkirmish()) ? 0 : UnityGameInstance.Instance.Game.Simulation.GetRawReputation(faction?.FactionValue);
                 int mrbRating = (MissionControl.MissionControl.Instance.IsSkirmish()) ? 0 : UnityGameInstance.Instance.Game.Simulation.GetRawReputation(FactionEnumeration.GetMercenaryReviewBoardFactionValue());
@@ -213,10 +210,10 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             }
             public override void Run(RunPayload payload)
             {
-                ModInit.modLog?.Trace?.Write($"[AddLanceToMercTeam - MC OVERRIDE] Adding lance to merc team {ModState.HostileMercLanceTeamOverride.FactionValue.Name}");
+                ModInit.modLog?.Trace?.Write($"[AddLanceToMercTeam - MC OVERRIDE] Adding lance to merc team {ModState.HostileMercLanceTeamOverride.TeamOverride.FactionValue.Name}");
                 MissionControl.Main.Logger.Log("[SPAM - AddLanceToTargetTeam - SPAM] Adding lance to merc team");
                 ContractOverride contractOverride = ((ContractOverridePayload)payload).ContractOverride;
-                TeamOverride targetTeam = ModState.HostileMercLanceTeamOverride;
+                TeamOverride targetTeam = ModState.HostileMercLanceTeamOverride.TeamOverride;
                 LanceOverride lanceOverride = (this.manuallySpecifiedLance == null) ? SelectMercLanceOverride("enemy").Copy() : this.manuallySpecifiedLance.Copy();
                 lanceOverride.name = $"Lance_Enemy_OpposingForce_{this.lanceGuid}";
                 if (this.unitGuids.Count > 4)
@@ -243,8 +240,8 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 targetTeam.lanceOverrideList.Add(lanceOverride);
                 ModInit.modLog?.Trace?.Write($"[AddLanceToMercTeam - MC OVERRIDE] Added {lanceOverride.lanceDefId} to lanceOverrideList override list");
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
-                ModState.HostileMercLanceTeamOverride.RunMadLibs(contractOverride.contract, sim.DataManager);
-                ModState.HostileMercLanceTeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, contractOverride.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
+                ModState.HostileMercLanceTeamOverride.TeamOverride.RunMadLibs(contractOverride.contract, sim.DataManager);
+                ModState.HostileMercLanceTeamOverride.TeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, contractOverride.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
 
             }
 
@@ -253,7 +250,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 string biome = Enum.GetName(typeof(Biome.BIOMESKIN), MissionControl.MissionControl.Instance.CurrentContract.ContractBiome);
                 biome = biome.Capitalise();
                 string contractType = MissionControl.MissionControl.Instance.CurrentContractType;
-                FactionDef faction = FactionDef.GetFactionDefByEnum(UnityGameInstance.BattleTechGame.DataManager, ModState.HostileMercLanceTeamOverride.FactionValue.Name);
+                FactionDef faction = FactionDef.GetFactionDefByEnum(UnityGameInstance.BattleTechGame.DataManager, ModState.HostileMercLanceTeamOverride.TeamOverride.FactionValue.Name);
                 string factionName = (faction == null) ? "UNKNOWN" : faction.Name;
                 int factionRep = (MissionControl.MissionControl.Instance.IsSkirmish()) ? 0 : UnityGameInstance.Instance.Game.Simulation.GetRawReputation(faction?.FactionValue);
                 int mrbRating = (MissionControl.MissionControl.Instance.IsSkirmish()) ? 0 : UnityGameInstance.Instance.Game.Simulation.GetRawReputation(FactionEnumeration.GetMercenaryReviewBoardFactionValue());

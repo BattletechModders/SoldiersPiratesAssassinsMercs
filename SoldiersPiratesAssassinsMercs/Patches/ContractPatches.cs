@@ -1,27 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using BattleTech;
 using BattleTech.Data;
 using BattleTech.Framework;
-using BattleTech.StringInterpolation;
 using BattleTech.UI;
 using Harmony;
 using HBS.Collections;
-using HBS.Math;
-using IRBTModUtils;
-using Localize;
-using MissionControl.Data;
-using MissionControl.Logic;
-using MissionControl.Rules;
-using MissionControl.Trigger;
 using SoldiersPiratesAssassinsMercs.Framework;
-using UIWidgets;
 using UnityEngine;
-using static BattleTech.ModSupport.Utils.AdvancedJSONMerge;
 using Hostility = BattleTech.Hostility;
 using ModState = SoldiersPiratesAssassinsMercs.Framework.ModState;
 
@@ -281,15 +268,15 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
             public static void Postfix(Contract __instance)
             {
-                if (ModState.PlanetAltFactionTeamOverride != null)
+                if (ModState.PlanetAltFactionTeamOverride.TeamOverride != null)
                 {
                     __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.PlanetAltFactionTeamOverride);
                 }
-                else if (ModState.AltFactionFactionTeamOverride != null)
+                else if (ModState.AltFactionFactionTeamOverride.TeamOverride != null)
                 {
                     __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.AltFactionFactionTeamOverride);
                 }
-                else if (ModState.MercFactionTeamOverride != null)
+                else if (ModState.MercFactionTeamOverride.TeamOverride != null)
                 {
                     __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.MercFactionTeamOverride);
                 }
@@ -307,15 +294,15 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
             public static void Postfix(Contract __instance)
             {
-                if (ModState.PlanetAltFactionTeamOverride != null)
+                if (ModState.PlanetAltFactionTeamOverride.TeamOverride != null)
                 {
                     __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.PlanetAltFactionTeamOverride);
                 }
-                else if (ModState.AltFactionFactionTeamOverride != null)
+                else if (ModState.AltFactionFactionTeamOverride.TeamOverride != null)
                 {
                     __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.AltFactionFactionTeamOverride);
                 }
-                else if (ModState.MercFactionTeamOverride != null)
+                else if (ModState.MercFactionTeamOverride.TeamOverride != null)
                 {
                     __instance.GameContext.SetObject(GameContextObjectTagEnum.TeamTarget, ModState.MercFactionTeamOverride);
                 }
@@ -341,7 +328,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
                 if (Utils.ShouldReplaceOpforWithPlanetAlternate(__instance.Override, out var configPlanet))
                 {
-                    var planetFaction = Utils.GetAlternateFactionPoolFromWeight(sim, configPlanet);
+                    var planetFaction = Utils.GetAlternateFactionPoolFromWeight(sim, configPlanet, out var fallback);
                     ModState.OriginalTargetFactionTeamOverride = __instance.Override.targetTeam.Copy();
 
                     var contractFactionIDs = __instance.teamFactionIDs;
@@ -352,8 +339,9 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     }
 
                     __instance.Override.targetTeam.ReAssignHostileToAllFactionToTeam(contractFactionIDs, sim.DataManager);
-                    ModState.PlanetAltFactionTeamOverride = __instance.Override.targetTeam;
-
+                    //ModState.PlanetAltFactionTeamOverride = new Tuple<TeamOverride, string>(__instance.Override.targetTeam, configPlanet.AlternateFactionFallbackTag);
+                    ModState.PlanetAltFactionTeamOverride.TeamOverride = __instance.Override.targetTeam;
+                    ModState.PlanetAltFactionTeamOverride.TeamOverrideFallback = fallback;
                     if (ModInit.modSettings.enableTrace)
                     {
                         var debugIDS = "";
@@ -365,13 +353,13 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     }
 
                     ModInit.modLog?.Info?.Write(
-                        $"[Contract_BeginRequestResources] Set ModState.AltPlanetFactionTeamOverride to {ModState.PlanetAltFactionTeamOverride?.faction}, original was {ModState.OriginalTargetFactionTeamOverride?.faction}. TargetTeam is now {__instance.Override.targetTeam.FactionValue.Name}. Reinitializing MissionControl");
+                        $"[Contract_BeginRequestResources] Set ModState.AltPlanetFactionTeamOverride to {ModState.PlanetAltFactionTeamOverride?.TeamOverride.faction}, original was {ModState.OriginalTargetFactionTeamOverride?.faction}. TargetTeam is now {__instance.Override.targetTeam.FactionValue.Name}. Reinitializing MissionControl");
                     global::MissionControl.MissionControl.Instance.SetContract(__instance);
                     return;
                 }
                 else if (Utils.ShouldReplaceOpforWithFactionAlternate(__instance.Override, out var configAlt))
                 {
-                    var altFaction = Utils.GetAlternateFactionPoolFromWeight(sim, configAlt);
+                    var altFaction = Utils.GetAlternateFactionPoolFromWeight(sim, configAlt, out var fallback);
                     ModState.OriginalTargetFactionTeamOverride = __instance.Override.targetTeam.Copy();
 
 
@@ -383,8 +371,9 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     }
 
                     __instance.Override.targetTeam.ReAssignHostileAltFactionToTeam(contractFactionIDs, sim.DataManager);
-                    ModState.AltFactionFactionTeamOverride = __instance.Override.targetTeam;
-
+                    //ModState.AltFactionFactionTeamOverride = new Tuple<TeamOverride, string>(__instance.Override.targetTeam, configAlt.AlternateFactionFallbackTag);
+                    ModState.AltFactionFactionTeamOverride.TeamOverride = __instance.Override.targetTeam;
+                    ModState.AltFactionFactionTeamOverride.TeamOverrideFallback = fallback;
                     if (ModInit.modSettings.enableTrace)
                     {
                         var debugIDS = "";
@@ -396,13 +385,13 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     }
 
                     ModInit.modLog?.Info?.Write(
-                        $"[Contract_BeginRequestResources] Set ModState.AltFactionFactionTeamOverride to {ModState.AltFactionFactionTeamOverride?.faction}, original was {ModState.OriginalTargetFactionTeamOverride?.faction}. TargetTeam is now {__instance.Override.targetTeam.FactionValue.Name}. Reinitializing MissionControl");
+                        $"[Contract_BeginRequestResources] Set ModState.AltFactionFactionTeamOverride to {ModState.AltFactionFactionTeamOverride?.TeamOverride.faction}, original was {ModState.OriginalTargetFactionTeamOverride?.faction}. TargetTeam is now {__instance.Override.targetTeam.FactionValue.Name}. Reinitializing MissionControl");
                     global::MissionControl.MissionControl.Instance.SetContract(__instance);
                     return;
                 }
                 else if (Utils.ShouldReplaceOpforWithMercs(__instance.Override))
                 {
-                    var mercFaction = Utils.GetMercFactionPoolFromWeight(sim, __instance.Override.targetTeam.faction);
+                    var mercFaction = Utils.GetMercFactionPoolFromWeight(sim, __instance.Override.targetTeam.faction, out var fallbackTag);
                     if (mercFaction == -1)
                     {
                         ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] Selected MercFaction [-1], aborting. No valid merc factions for employer, probably.");
@@ -419,8 +408,9 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     }
 
                     __instance.Override.targetTeam.ReAssignHostileMercFactionToTeam(contractFactionIDs, sim.DataManager);
-                    ModState.MercFactionTeamOverride = __instance.Override.targetTeam;
-
+                    //ModState.MercFactionTeamOverride = new Tuple<TeamOverride, string>(__instance.Override.targetTeam, fallbackTag);
+                    ModState.MercFactionTeamOverride.TeamOverride = __instance.Override.targetTeam;
+                    ModState.MercFactionTeamOverride.TeamOverrideFallback = fallbackTag;
                     if (ModInit.modSettings.enableTrace)
                     {
                         var debugIDS = "";
@@ -432,7 +422,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     }
 
                     ModInit.modLog?.Info?.Write(
-                        $"[Contract_BeginRequestResources] Set ModState.MercFactionForReplacement to {ModState.MercFactionTeamOverride?.faction}, original was {ModState.OriginalTargetFactionTeamOverride?.faction}. TargetTeam is now {__instance.Override.targetTeam.FactionValue.Name}. Reinitializing MissionControl");
+                        $"[Contract_BeginRequestResources] Set ModState.MercFactionForReplacement to {ModState.MercFactionTeamOverride?.TeamOverride.faction}, original was {ModState.OriginalTargetFactionTeamOverride?.faction}. TargetTeam is now {__instance.Override.targetTeam.FactionValue.Name}. Reinitializing MissionControl");
                     global::MissionControl.MissionControl.Instance.SetContract(__instance);
                     return;
                 }
@@ -442,20 +432,22 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 else if (Utils.ShouldAddPlanetLance(__instance.Override, out var configPlanetLance))
 
                 {
-                    var hostileToAllFaction = Utils.GetAlternateFactionPoolFromWeight(sim, configPlanetLance);
+                    var hostileToAllFaction = Utils.GetAlternateFactionPoolFromWeight(sim, configPlanetLance, out var fallback);
                     if (hostileToAllFaction == -1)
                     {
                         ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] Selected faction [-1], aborting. No valid planet factions for employer, probably.");
                         return;
                     }
-                    ModState.HostileToAllLanceTeamOverride = new TeamOverride(GlobalVars.HostileToAllLanceTeamDefinitionGUID,
-                        "HostilePlanetTeam");
-                    ModState.HostileToAllLanceTeamOverride.AssignHostileToAllFactionToTeamState(hostileToAllFaction, sim.DataManager);
+                    //ModState.HostileToAllLanceTeamOverride = new Tuple<TeamOverride, string>(new TeamOverride(GlobalVars.HostileToAllLanceTeamDefinitionGUID,
+                    //    "HostilePlanetTeam"), configPlanetLance.AlternateFactionFallbackTag);
+                    ModState.HostileToAllLanceTeamOverride.TeamOverride = new TeamOverride(GlobalVars.HostileToAllLanceTeamDefinitionGUID, "HostilePlanetTeam");
+                    ModState.HostileToAllLanceTeamOverride.TeamOverrideFallback = fallback;
+                    ModState.HostileToAllLanceTeamOverride.TeamOverride.AssignHostileToAllFactionToTeamState(hostileToAllFaction, sim.DataManager);
 
                     //do lance prep stuff? -> probably need to call generate units, etc etc etc
                     ModInit.modLog?.Info?.Write(
-                        $"[Contract_BeginRequestResources] Set hostile lance override to {ModState.HostileToAllLanceTeamOverride?.faction}; {ModState.HostileMercLanceTeamOverride?.FactionValue?.Name}; {ModState.HostileMercLanceTeamOverride?.FactionDef?.Name}, will be used if contract has AdditionalLances. Reinitializing MissionControl");
-                    ModState.HostileToAllLanceTeamOverride.ProcessHeraldryLoadRequest(sim);
+                        $"[Contract_BeginRequestResources] Set hostile lance override to {ModState.HostileToAllLanceTeamOverride?.TeamOverride.faction}; {ModState.HostileMercLanceTeamOverride?.TeamOverride.FactionValue?.Name}; {ModState.HostileMercLanceTeamOverride?.TeamOverride.FactionDef?.Name}, will be used if contract has AdditionalLances. Reinitializing MissionControl");
+                    ModState.HostileToAllLanceTeamOverride?.TeamOverride.ProcessHeraldryLoadRequest(sim);
                     global::MissionControl.MissionControl.Instance.SetContract(__instance);
                     //                    ModState.HostileMercLanceTeamOverride.RunMadLibs(__instance, sim.DataManager);
                     //                    ModState.HostileMercLanceTeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, __instance.Override.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
@@ -464,22 +456,23 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 else if (Utils.ShouldAddAltFactionLance(__instance.Override, out var configAltLance))
 
                 {
-                    var hostileAltLanceFaction = Utils.GetAlternateFactionPoolFromWeight(sim, configAltLance);
+                    var hostileAltLanceFaction = Utils.GetAlternateFactionPoolFromWeight(sim, configAltLance, out var fallback);
                     if (hostileAltLanceFaction == -1)
                     {
                         ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] Selected  [-1], aborting. No valid factions for employer, probably.");
                         return;
                     }
 
-                    ModState.HostileAltLanceTeamOverride = new TeamOverride(
-                        GlobalVars.HostileMercLanceTeamDefinitionGUID,
-                        "HostileAltFactionTeam");
-                    ModState.HostileAltLanceTeamOverride.AssignHostileAltFactionToTeamState(hostileAltLanceFaction, sim.DataManager);
+                    //ModState.HostileAltLanceTeamOverride = new Tuple<TeamOverride, string>(new TeamOverride(
+                    //    GlobalVars.HostileMercLanceTeamDefinitionGUID, "HostileAltFactionTeam"),configAltLance.AlternateFactionFallbackTag);
+                    ModState.HostileAltLanceTeamOverride.TeamOverride = new TeamOverride(GlobalVars.HostileMercLanceTeamDefinitionGUID, "HostileAltFactionTeam");
+                    ModState.HostileAltLanceTeamOverride.TeamOverrideFallback = fallback;
+                    ModState.HostileAltLanceTeamOverride.TeamOverride.AssignHostileAltFactionToTeamState(hostileAltLanceFaction, sim.DataManager);
 
                     //do lance prep stuff? -> probably need to call generate units, etc etc etc
                     ModInit.modLog?.Info?.Write(
-                        $"[Contract_BeginRequestResources] Set hostile merc lance override to {ModState.HostileMercLanceTeamOverride?.faction}; {ModState.HostileMercLanceTeamOverride?.FactionValue?.Name}; {ModState.HostileMercLanceTeamOverride?.FactionDef?.Name}, will be used if contract has AdditionalLances. Reinitializing MissionControl");
-                    ModState.HostileAltLanceTeamOverride.ProcessHeraldryLoadRequest(sim);
+                        $"[Contract_BeginRequestResources] Set hostile merc lance override to {ModState.HostileMercLanceTeamOverride?.TeamOverride.faction}; {ModState.HostileMercLanceTeamOverride?.TeamOverride.FactionValue?.Name}; {ModState.HostileMercLanceTeamOverride?.TeamOverride.FactionDef?.Name}, will be used if contract has AdditionalLances. Reinitializing MissionControl");
+                    ModState.HostileAltLanceTeamOverride.TeamOverride.ProcessHeraldryLoadRequest(sim);
                     global::MissionControl.MissionControl.Instance.SetContract(__instance);
 //                    ModState.HostileMercLanceTeamOverride.RunMadLibs(__instance, sim.DataManager);
 //                    ModState.HostileMercLanceTeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, __instance.Override.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
@@ -489,20 +482,24 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 else if (Utils.ShouldAddMercLance(__instance.Override))
 
                 {
-                    var hostileMercLanceFaction = Utils.GetMercFactionPoolFromWeight(sim, __instance.Override.targetTeam.faction);
+                    var hostileMercLanceFaction = Utils.GetMercFactionPoolFromWeight(sim, __instance.Override.targetTeam.faction, out var fallbackTag);
                     if (hostileMercLanceFaction == -1)
                     {
                         ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] Selected MercFaction [-1], aborting. No valid merc factions for employer, probably.");
                         return;
                     }
-                    ModState.HostileMercLanceTeamOverride = new TeamOverride(GlobalVars.HostileMercLanceTeamDefinitionGUID,
+                    //ModState.HostileMercLanceTeamOverride = new Tuple<TeamOverride, string>(new TeamOverride(GlobalVars.HostileMercLanceTeamDefinitionGUID,
+                    //    "HostileMercenaryTeam"), fallbackTag);
+                    ModState.HostileMercLanceTeamOverride.TeamOverride = new TeamOverride(
+                        GlobalVars.HostileMercLanceTeamDefinitionGUID,
                         "HostileMercenaryTeam");
-                    ModState.HostileMercLanceTeamOverride.AssignHostileMercFactionToTeamState(hostileMercLanceFaction, sim.DataManager);
+                    ModState.HostileMercLanceTeamOverride.TeamOverrideFallback = fallbackTag;
+                    ModState.HostileMercLanceTeamOverride.TeamOverride.AssignHostileMercFactionToTeamState(hostileMercLanceFaction, sim.DataManager);
 
                     //do lance prep stuff? -> probably need to call generate units, etc etc etc
                     ModInit.modLog?.Info?.Write(
-                        $"[Contract_BeginRequestResources] Set hostile merc lance override to {ModState.HostileMercLanceTeamOverride?.faction}; {ModState.HostileMercLanceTeamOverride?.FactionValue?.Name}; {ModState.HostileMercLanceTeamOverride?.FactionDef?.Name}, will be used if contract has AdditionalLances. Reinitializing MissionControl");
-                    ModState.HostileMercLanceTeamOverride.ProcessHeraldryLoadRequest(sim);
+                        $"[Contract_BeginRequestResources] Set hostile merc lance override to {ModState.HostileMercLanceTeamOverride?.TeamOverride.faction}; {ModState.HostileMercLanceTeamOverride?.TeamOverride.FactionValue?.Name}; {ModState.HostileMercLanceTeamOverride?.TeamOverride.FactionDef?.Name}, will be used if contract has AdditionalLances. Reinitializing MissionControl");
+                    ModState.HostileMercLanceTeamOverride?.TeamOverride.ProcessHeraldryLoadRequest(sim);
                     global::MissionControl.MissionControl.Instance.SetContract(__instance);
                     //                    ModState.HostileMercLanceTeamOverride.RunMadLibs(__instance, sim.DataManager);
                     //                    ModState.HostileMercLanceTeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, __instance.Override.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
@@ -519,30 +516,30 @@ namespace SoldiersPiratesAssassinsMercs.Patches
             static bool Prepare() => false; // disabled, unneeded
             public static void Postfix(ContractOverride __instance, DataManager dataManager, DateTime? currentDate, TagSet companyTags)
             {
-                if (ModState.HostileAltLanceTeamOverride != null)
+                if (ModState.HostileAltLanceTeamOverride.TeamOverride != null)
                 {
                     ModInit.modLog?.Info?.Write(
                         $"[ContractOverride_GenerateUnits - HostileAltLanceTeamOverride] running madlips and generating team");
                     var sim = UnityGameInstance.BattleTechGame.Simulation;
-                    ModState.HostileAltLanceTeamOverride.RunMadLibs(__instance.contract, sim.DataManager);
-                    ModState.HostileAltLanceTeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, __instance.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
+                    ModState.HostileAltLanceTeamOverride.TeamOverride.RunMadLibs(__instance.contract, sim.DataManager);
+                    ModState.HostileAltLanceTeamOverride.TeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, __instance.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
                 }
-                else if (ModState.HostileToAllLanceTeamOverride != null)
+                else if (ModState.HostileToAllLanceTeamOverride.TeamOverride != null)
                 {
                     ModInit.modLog?.Info?.Write(
                         $"[ContractOverride_GenerateUnits - HostileToAllLanceOverride] running madlips and generating team");
                     var sim = UnityGameInstance.BattleTechGame.Simulation;
-                    ModState.HostileToAllLanceTeamOverride.RunMadLibs(__instance.contract, sim.DataManager);
-                    ModState.HostileToAllLanceTeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, __instance.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
+                    ModState.HostileToAllLanceTeamOverride.TeamOverride.RunMadLibs(__instance.contract, sim.DataManager);
+                    ModState.HostileToAllLanceTeamOverride.TeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, __instance.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
                 }
 
-                else if (ModState.HostileMercLanceTeamOverride != null)
+                else if (ModState.HostileMercLanceTeamOverride.TeamOverride != null)
                 {
                     ModInit.modLog?.Info?.Write(
                         $"[ContractOverride_GenerateUnits - HostileMercLanceTeamOverride] running madlips and generating team");
                     var sim = UnityGameInstance.BattleTechGame.Simulation;
-                    ModState.HostileMercLanceTeamOverride.RunMadLibs(__instance.contract, sim.DataManager);
-                    ModState.HostileMercLanceTeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, __instance.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
+                    ModState.HostileMercLanceTeamOverride.TeamOverride.RunMadLibs(__instance.contract, sim.DataManager);
+                    ModState.HostileMercLanceTeamOverride.TeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, __instance.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
                 }
             }
         }
@@ -555,23 +552,23 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
             public static void Postfix(EncounterLayerData __instance, ContractOverride contractOverride, bool fromEditorApplyButton)
             {
-                if (ModState.HostileAltLanceTeamOverride != null)
+                if (ModState.HostileAltLanceTeamOverride.TeamOverride != null)
                 {
                     var dictionary = new Dictionary<string, EncounterObjectGameLogic>();
                     __instance.BuildEncounterObjectDictionary(dictionary);
-                    __instance.ApplyTeamOverride(ModState.HostileAltLanceTeamOverride, dictionary, fromEditorApplyButton);
+                    __instance.ApplyTeamOverride(ModState.HostileAltLanceTeamOverride.TeamOverride, dictionary, fromEditorApplyButton);
                 }
-                else if (ModState.HostileToAllLanceTeamOverride != null)
+                else if (ModState.HostileToAllLanceTeamOverride.TeamOverride != null)
                 {
                     var dictionary = new Dictionary<string, EncounterObjectGameLogic>();
                     __instance.BuildEncounterObjectDictionary(dictionary);
-                    __instance.ApplyTeamOverride(ModState.HostileToAllLanceTeamOverride, dictionary, fromEditorApplyButton);
+                    __instance.ApplyTeamOverride(ModState.HostileToAllLanceTeamOverride.TeamOverride, dictionary, fromEditorApplyButton);
                 }
-                else if (ModState.HostileMercLanceTeamOverride != null)
+                else if (ModState.HostileMercLanceTeamOverride.TeamOverride != null)
                 {
                     var dictionary = new Dictionary<string, EncounterObjectGameLogic>();
                     __instance.BuildEncounterObjectDictionary(dictionary);
-                    __instance.ApplyTeamOverride(ModState.HostileMercLanceTeamOverride, dictionary, fromEditorApplyButton);
+                    __instance.ApplyTeamOverride(ModState.HostileMercLanceTeamOverride.TeamOverride, dictionary, fromEditorApplyButton);
                 }
             }
         }
@@ -582,19 +579,19 @@ namespace SoldiersPiratesAssassinsMercs.Patches
             public static void Postfix(EncounterLayerData __instance, ref List<TeamDefinition> __result)
             {
 
-                if (ModState.HostileAltLanceTeamOverride != null && __result.All(x => x.GUID != ModState.HostileAltLanceTeamDefinition.GUID))
+                if (ModState.HostileAltLanceTeamOverride.TeamOverride != null && __result.All(x => x.GUID != ModState.HostileAltLanceTeamDefinition.GUID))
                 {
                     __result.Add(ModState.HostileAltLanceTeamDefinition);
                     ModInit.modLog?.Trace?.Write($"[TeamDefinition_CreateNewTeamDefinitionList] Added HostileAltLanceTeamDefinition with GUID {ModState.HostileAltLanceTeamDefinition.GUID}.");
                 }
 
-                else if (ModState.HostileToAllLanceTeamOverride != null && __result.All(x => x.GUID != ModState.HostileToAllLanceTeamDefinition.GUID))
+                else if (ModState.HostileToAllLanceTeamOverride.TeamOverride != null && __result.All(x => x.GUID != ModState.HostileToAllLanceTeamDefinition.GUID))
                 {
                     __result.Add(ModState.HostileToAllLanceTeamDefinition);
                     ModInit.modLog?.Trace?.Write($"[TeamDefinition_CreateNewTeamDefinitionList] Added HostileToAllLanceTeamDefinition with GUID {ModState.HostileToAllLanceTeamDefinition.GUID}.");
                 }
 
-                else if (ModState.HostileMercLanceTeamOverride != null && __result.All(x => x.GUID != ModState.HostileMercLanceTeamDefinition.GUID))
+                else if (ModState.HostileMercLanceTeamOverride.TeamOverride != null && __result.All(x => x.GUID != ModState.HostileMercLanceTeamDefinition.GUID))
                 {
                     __result.Add(ModState.HostileMercLanceTeamDefinition);
                     ModInit.modLog?.Trace?.Write($"[TeamDefinition_CreateNewTeamDefinitionList] Added HostileMercLanceTeamDefinition with GUID {ModState.HostileMercLanceTeamDefinition.GUID}.");
@@ -621,9 +618,9 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] Running GetMatchingUnitDefs");
                 var tags = requiredTags.ToArray();
                 ModInit.modLog?.Trace?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] TAGSPAM {string.Join(", ",tags)}");
-                if (ModState.PlanetAltFactionTeamOverride != null)
+                if (ModState.PlanetAltFactionTeamOverride.TeamOverride != null)
                 {
-                    var altFactionLowerCased = ModState.PlanetAltFactionTeamOverride.FactionValue.Name.ToLower();
+                    var altFactionLowerCased = ModState.PlanetAltFactionTeamOverride.TeamOverride.FactionValue.Name.ToLower();
                     if (requiredTags.Contains(altFactionLowerCased))
                     {
                         ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Found alt planet faction tag: {altFactionLowerCased} in requiredTags, should be using alt planet units");
@@ -631,17 +628,36 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                             currentDate, companyTags);
                         if (resultDefs.Count == 0)
                         {
+                            if (!string.IsNullOrEmpty(ModState.PlanetAltFactionTeamOverride.TeamOverrideFallback))
+                            {
+                                requiredTags.Remove(altFactionLowerCased);
+                                requiredTags.Add(ModState.PlanetAltFactionTeamOverride.TeamOverrideFallback.ToLower());
+                                var fallBackDefs = Utils.GetMatchingUnitDefsOriginal(mdd, requiredTags, excludedTags, checkOwnership,
+                                    currentDate, companyTags);
+                                ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing alt faction tag: {altFactionLowerCased}" +
+                                                            $"and replacing with faction fallback tag: {ModState.PlanetAltFactionTeamOverride.TeamOverrideFallback.ToLower()}");
+                                if (fallBackDefs.Count == 0)
+                                {
+                                    ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Faction result failed, removing alt faction tag: {ModState.PlanetAltFactionTeamOverride.TeamOverrideFallback.ToLower()} " +
+                                                                $"and replacing with generic fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
+
+                                    requiredTags.Remove(ModState.PlanetAltFactionTeamOverride.TeamOverrideFallback.ToLower());
+                                    requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag.ToLower());
+                                    return;
+                                }
+                                return;
+                            }
                             requiredTags.Remove(altFactionLowerCased);
-                            requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag);
-                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing alt faction tag: {altFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag}");
+                            requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag.ToLower());
+                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing alt faction tag: {altFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
                             return;
                         }
                         ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Proceeding using original requiredTags.");
                     }
                 }
-                else if (ModState.AltFactionFactionTeamOverride != null)
+                else if (ModState.AltFactionFactionTeamOverride.TeamOverride != null)
                 {
-                    var altFactionLowerCased = ModState.AltFactionFactionTeamOverride.FactionValue.Name.ToLower();
+                    var altFactionLowerCased = ModState.AltFactionFactionTeamOverride.TeamOverride.FactionValue.Name.ToLower();
                     if (requiredTags.Contains(altFactionLowerCased))
                     {
                         ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Found alt faction tag: {altFactionLowerCased} in requiredTags, should be using alt units");
@@ -649,17 +665,36 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                             currentDate, companyTags);
                         if (resultDefs.Count == 0)
                         {
+                            if (!string.IsNullOrEmpty(ModState.AltFactionFactionTeamOverride.TeamOverrideFallback))
+                            {
+                                requiredTags.Remove(altFactionLowerCased);
+                                requiredTags.Add(ModState.AltFactionFactionTeamOverride.TeamOverrideFallback.ToLower());
+                                var fallBackDefs = Utils.GetMatchingUnitDefsOriginal(mdd, requiredTags, excludedTags, checkOwnership,
+                                    currentDate, companyTags);
+                                ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing alt faction tag: {altFactionLowerCased}" +
+                                                            $"and replacing with faction fallback tag: {ModState.AltFactionFactionTeamOverride.TeamOverrideFallback.ToLower()}");
+                                if (fallBackDefs.Count == 0)
+                                {
+                                    ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Faction result failed, removing alt faction tag: {ModState.AltFactionFactionTeamOverride.TeamOverrideFallback.ToLower()} " +
+                                                                $"and replacing with generic fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
+
+                                    requiredTags.Remove(ModState.AltFactionFactionTeamOverride.TeamOverrideFallback.ToLower());
+                                    requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag.ToLower());
+                                    return;
+                                }
+                                return;
+                            }
                             requiredTags.Remove(altFactionLowerCased);
-                            requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag);
-                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing alt faction tag: {altFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag}");
+                            requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag.ToLower());
+                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing alt faction tag: {altFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
                             return;
                         }
                         ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Proceeding using original requiredTags.");
                     }
                 }
-                else if (ModState.MercFactionTeamOverride != null)
+                else if (ModState.MercFactionTeamOverride.TeamOverride != null)
                 {
-                    var mercFactionLowerCased = ModState.MercFactionTeamOverride.FactionValue.Name.ToLower();
+                    var mercFactionLowerCased = ModState.MercFactionTeamOverride.TeamOverride.FactionValue.Name.ToLower();
                     if (requiredTags.Contains(mercFactionLowerCased))
                     {
                         ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Found merc faction tag: {mercFactionLowerCased} in requiredTags, should be using merc units");
@@ -667,22 +702,37 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                             currentDate, companyTags);
                         if (resultDefs.Count == 0)
                         {
+                            if (!string.IsNullOrEmpty(ModState.MercFactionTeamOverride.TeamOverrideFallback))
+                            {
+                                requiredTags.Remove(mercFactionLowerCased);
+                                requiredTags.Add(ModState.MercFactionTeamOverride.TeamOverrideFallback.ToLower());
+                                var fallBackDefs = Utils.GetMatchingUnitDefsOriginal(mdd, requiredTags, excludedTags, checkOwnership,
+                                    currentDate, companyTags);
+                                ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing alt faction tag: {mercFactionLowerCased}" +
+                                                            $"and replacing with faction fallback tag: {ModState.MercFactionTeamOverride.TeamOverrideFallback.ToLower()}");
+                                if (fallBackDefs.Count == 0)
+                                {
+                                    ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Faction result failed, removing alt faction tag: {ModState.MercFactionTeamOverride.TeamOverrideFallback.ToLower()} " +
+                                                                $"and replacing with generic fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
+
+                                    requiredTags.Remove(ModState.MercFactionTeamOverride.TeamOverrideFallback.ToLower());
+                                    requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag.ToLower());
+                                    return;
+                                }
+                                return;
+                            }
                             requiredTags.Remove(mercFactionLowerCased);
-                            requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag);
-                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing merc faction tag: {mercFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag}");
+                            requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag.ToLower());
+                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing merc faction tag: {mercFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
                             return;
                         }
                         ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Proceeding using original requiredTags.");
                     }
                 }
 
-
-
-
-
-                else if (ModState.HostileAltLanceTeamOverride != null)
+                else if (ModState.HostileAltLanceTeamOverride.TeamOverride != null)
                 {
-                    var altFactionLowerCased = ModState.HostileAltLanceTeamOverride.FactionValue.Name.ToLower();
+                    var altFactionLowerCased = ModState.HostileAltLanceTeamOverride.TeamOverride.FactionValue.Name.ToLower();
                     if (requiredTags.Contains(altFactionLowerCased))
                     {
                         ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [AdditionalLance Override] Found alt faction tag: {altFactionLowerCased} in requiredTags, should be using alt units");
@@ -690,17 +740,36 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                             currentDate, companyTags);
                         if (resultDefs.Count == 0)
                         {
+                            if (!string.IsNullOrEmpty(ModState.HostileAltLanceTeamOverride.TeamOverrideFallback))
+                            {
+                                requiredTags.Remove(altFactionLowerCased);
+                                requiredTags.Add(ModState.HostileAltLanceTeamOverride.TeamOverrideFallback.ToLower());
+                                var fallBackDefs = Utils.GetMatchingUnitDefsOriginal(mdd, requiredTags, excludedTags, checkOwnership,
+                                    currentDate, companyTags);
+                                ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing alt faction tag: {altFactionLowerCased}" +
+                                                            $"and replacing with faction fallback tag: {ModState.HostileAltLanceTeamOverride.TeamOverrideFallback.ToLower()}");
+                                if (fallBackDefs.Count == 0)
+                                {
+                                    ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Faction result failed, removing alt faction tag: {ModState.HostileAltLanceTeamOverride.TeamOverrideFallback.ToLower()} " +
+                                                                $"and replacing with generic fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
+
+                                    requiredTags.Remove(ModState.HostileAltLanceTeamOverride.TeamOverrideFallback.ToLower());
+                                    requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag.ToLower());
+                                    return;
+                                }
+                                return;
+                            }
                             requiredTags.Remove(altFactionLowerCased);
-                            requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag);
-                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [AdditionalLance Override] Original result failed, removing alt faction tag: {altFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag}");
+                            requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag.ToLower());
+                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [AdditionalLance Override] Original result failed, removing alt faction tag: {altFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
                             return;
                         }
                         ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [AdditionalLance Override] Proceeding using original requiredTags.");
                     }
                 }
-                else if (ModState.HostileToAllLanceTeamOverride != null)
+                else if (ModState.HostileToAllLanceTeamOverride.TeamOverride != null)
                 {
-                    var hostileAllFactionLowerCased = ModState.HostileToAllLanceTeamOverride.FactionValue.Name.ToLower();
+                    var hostileAllFactionLowerCased = ModState.HostileToAllLanceTeamOverride.TeamOverride.FactionValue.Name.ToLower();
                     if (requiredTags.Contains(hostileAllFactionLowerCased))
                     {
                         ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [AdditionalLance Override] Found hostile all faction tag: {hostileAllFactionLowerCased} in requiredTags, should be using hostile all units");
@@ -708,17 +777,36 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                             currentDate, companyTags);
                         if (resultDefs.Count == 0)
                         {
+                            if (!string.IsNullOrEmpty(ModState.HostileToAllLanceTeamOverride.TeamOverrideFallback))
+                            {
+                                requiredTags.Remove(hostileAllFactionLowerCased);
+                                requiredTags.Add(ModState.HostileToAllLanceTeamOverride.TeamOverrideFallback.ToLower());
+                                var fallBackDefs = Utils.GetMatchingUnitDefsOriginal(mdd, requiredTags, excludedTags, checkOwnership,
+                                    currentDate, companyTags);
+                                ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing alt faction tag: {hostileAllFactionLowerCased}" +
+                                                            $"and replacing with faction fallback tag: {ModState.HostileToAllLanceTeamOverride.TeamOverrideFallback.ToLower()}");
+                                if (fallBackDefs.Count == 0)
+                                {
+                                    ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Faction result failed, removing alt faction tag: {ModState.HostileToAllLanceTeamOverride.TeamOverrideFallback.ToLower()} " +
+                                                                $"and replacing with generic fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
+
+                                    requiredTags.Remove(ModState.HostileToAllLanceTeamOverride.TeamOverrideFallback.ToLower());
+                                    requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag.ToLower());
+                                    return;
+                                }
+                                return;
+                            }
                             requiredTags.Remove(hostileAllFactionLowerCased);
-                            requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag);
-                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [AdditionalLance Override] Original result failed, removing hostile all faction tag: {hostileAllFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag}");
+                            requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag.ToLower());
+                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [AdditionalLance Override] Original result failed, removing hostile all faction tag: {hostileAllFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
                             return;
                         }
                         ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [AdditionalLance Override] Proceeding using original requiredTags.");
                     }
                 }
-                else if (ModState.HostileMercLanceTeamOverride != null)
+                else if (ModState.HostileMercLanceTeamOverride.TeamOverride != null)
                 {
-                    var mercFactionLowerCased = ModState.HostileMercLanceTeamOverride.FactionValue.Name.ToLower();
+                    var mercFactionLowerCased = ModState.HostileMercLanceTeamOverride.TeamOverride.FactionValue.Name.ToLower();
                     if (requiredTags.Contains(mercFactionLowerCased))
                     {
                         ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [AdditionalLance Override] Found merc faction tag: {mercFactionLowerCased} in requiredTags, should be using merc units");
@@ -726,9 +814,28 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                             currentDate, companyTags);
                         if (resultDefs.Count == 0)
                         {
+                            if (!string.IsNullOrEmpty(ModState.HostileMercLanceTeamOverride.TeamOverrideFallback))
+                            {
+                                requiredTags.Remove(mercFactionLowerCased);
+                                requiredTags.Add(ModState.HostileMercLanceTeamOverride.TeamOverrideFallback.ToLower());
+                                var fallBackDefs = Utils.GetMatchingUnitDefsOriginal(mdd, requiredTags, excludedTags, checkOwnership,
+                                    currentDate, companyTags);
+                                ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing alt faction tag: {mercFactionLowerCased}" +
+                                                            $"and replacing with faction fallback tag: {ModState.HostileMercLanceTeamOverride.TeamOverrideFallback.ToLower()}");
+                                if (fallBackDefs.Count == 0)
+                                {
+                                    ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Faction result failed, removing alt faction tag: {ModState.HostileMercLanceTeamOverride.TeamOverrideFallback.ToLower()}" +
+                                                                $"and replacing with generic fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
+
+                                    requiredTags.Remove(ModState.HostileMercLanceTeamOverride.TeamOverrideFallback.ToLower());
+                                    requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag.ToLower());
+                                    return;
+                                }
+                                return;
+                            }
                             requiredTags.Remove(mercFactionLowerCased);
-                            requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag);
-                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [AdditionalLance Override] Original result failed, removing merc faction tag: {mercFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag}");
+                            requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag.ToLower());
+                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [AdditionalLance Override] Original result failed, removing merc faction tag: {mercFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
                             return;
                         }
                         ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [AdditionalLance Override] Proceeding using original requiredTags.");
@@ -744,7 +851,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
             public static void Postfix(AAR_FactionReputationResultWidget __instance, SimGameState theSimState,
                 Contract theContract)
             {
-                if (ModState.PlanetAltFactionTeamOverride != null)
+                if (ModState.PlanetAltFactionTeamOverride.TeamOverride != null)
                 {
                     ModInit.modLog?.Info?.Write($"[AAR_FactionReputationResultWidget_InitializeData_Patch] Processing reputation change for original target faction due to replacement with planet alt faction.");
                     var faction = UnityGameInstance.BattleTechGame.DataManager.Factions
@@ -787,7 +894,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                         }
                     }
                 }
-                else if (ModState.AltFactionFactionTeamOverride != null)
+                else if (ModState.AltFactionFactionTeamOverride.TeamOverride != null)
                 {
                     ModInit.modLog?.Info?.Write($"[AAR_FactionReputationResultWidget_InitializeData_Patch] Processing reputation change for original target faction due to replacement with alt faction.");
                     var faction = UnityGameInstance.BattleTechGame.DataManager.Factions
@@ -830,7 +937,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                         }
                     }
                 }
-                else if (ModState.MercFactionTeamOverride != null)
+                else if (ModState.MercFactionTeamOverride.TeamOverride != null)
                 {
                     ModInit.modLog?.Info?.Write($"[AAR_FactionReputationResultWidget_InitializeData_Patch] Processing reputation change for original target faction due to replacement with mercs.");
                     var faction = UnityGameInstance.BattleTechGame.DataManager.Factions
@@ -877,14 +984,14 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 }
 
 
-                else if (ModState.HostileToAllLanceTeamOverride != null)
+                else if (ModState.HostileToAllLanceTeamOverride.TeamOverride != null)
                 {
                     ModInit.modLog?.Info?.Write($"[AAR_FactionReputationResultWidget_InitializeData_Patch] Processing reputation change for hostile all faction due to support lance deployment.");
                     var faction = UnityGameInstance.BattleTechGame.DataManager.Factions
                         .FirstOrDefault(x =>
-                            x.Value.FactionValue.Name == ModState.HostileToAllLanceTeamOverride.FactionValue.Name)
+                            x.Value.FactionValue.Name == ModState.HostileToAllLanceTeamOverride.TeamOverride.FactionValue.Name)
                         .Value;
-                    ModState.HostileToAllLanceTeamOverride.UpdateMercFactionStats(theSimState);
+                    ModState.HostileToAllLanceTeamOverride.TeamOverride.UpdateMercFactionStats(theSimState);
                     if (faction != null)
                     {
                         if (faction.FactionValue.DoesGainReputation) //TargetVsEmployer
@@ -923,14 +1030,14 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                         }
                     }
                 }
-                else if (ModState.HostileAltLanceTeamOverride != null)
+                else if (ModState.HostileAltLanceTeamOverride.TeamOverride != null)
                 {
                     ModInit.modLog?.Info?.Write($"[AAR_FactionReputationResultWidget_InitializeData_Patch] Processing reputation change for alt faction due to support lance deployment.");
                     var faction = UnityGameInstance.BattleTechGame.DataManager.Factions
                         .FirstOrDefault(x =>
-                            x.Value.FactionValue.Name == ModState.HostileToAllLanceTeamOverride.FactionValue.Name)
+                            x.Value.FactionValue.Name == ModState.HostileToAllLanceTeamOverride?.TeamOverride.FactionValue.Name)
                         .Value;
-                    ModState.HostileToAllLanceTeamOverride.UpdateMercFactionStats(theSimState);
+                    ModState.HostileToAllLanceTeamOverride?.TeamOverride.UpdateMercFactionStats(theSimState);
                     if (faction != null)
                     {
                         if (faction.FactionValue.DoesGainReputation) //TargetVsEmployer
@@ -970,14 +1077,14 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     }
                 }
                 
-                else if (ModState.HostileMercLanceTeamOverride != null)
+                else if (ModState.HostileMercLanceTeamOverride.TeamOverride != null)
                 {
                     ModInit.modLog?.Info?.Write($"[AAR_FactionReputationResultWidget_InitializeData_Patch] Processing reputation change for merc faction due to support lance deployment.");
                     var faction = UnityGameInstance.BattleTechGame.DataManager.Factions
                         .FirstOrDefault(x =>
-                            x.Value.FactionValue.Name == ModState.HostileMercLanceTeamOverride.FactionValue.Name)
+                            x.Value.FactionValue.Name == ModState.HostileMercLanceTeamOverride.TeamOverride.FactionValue.Name)
                         .Value;
-                    ModState.HostileMercLanceTeamOverride.UpdateMercFactionStats(theSimState);
+                    ModState.HostileMercLanceTeamOverride.TeamOverride.UpdateMercFactionStats(theSimState);
                     if (faction != null)
                     {
                         if (faction.FactionValue.DoesGainReputation) //TargetVsEmployer

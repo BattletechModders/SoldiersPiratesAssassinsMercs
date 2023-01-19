@@ -2,29 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using BattleTech;
 using BattleTech.Data;
 using BattleTech.Designed;
 using BattleTech.Framework;
 using BattleTech.StringInterpolation;
-using BattleTech.UI;
 using FogOfWar;
-using Gaia;
 using Harmony;
 using HBS;
 using HBS.Collections;
-using IRBTModUtils;
 using MissionControl.Logic;
-using UIWidgets;
 using UnityEngine;
 using us.frostraptor.modUtils.CustomDialog;
-using static MaterialAnimator;
-using Random = System.Random;
 
 namespace SoldiersPiratesAssassinsMercs.Framework
 {
@@ -120,17 +109,17 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             ModState.HostileToAllLanceTeamDefinition.FactionValue = factionByID;
         }
 
-        public static FactionValue GetFactionValueFromString(string factionID)
+        public static FactionValue GetFactionValueFromString(string factionName)
         {
             FactionValue result = FactionEnumeration.GetInvalidUnsetFactionValue();
-            if (!string.IsNullOrEmpty(factionID))
+            if (!string.IsNullOrEmpty(factionName))
             {
-                result = FactionEnumeration.GetFactionByName(factionID);
+                result = FactionEnumeration.GetFactionByName(factionName);
             }
             return result;
         }
         
-        public static int GetMercFactionPoolFromWeight(SimGameState sim, string targetTeam)
+        public static int GetMercFactionPoolFromWeight(SimGameState sim, string targetTeam, out string mercFactionFallbackTag)
         {
             var factionValueInt = -1;
             var factionPool = new List<int>();
@@ -138,8 +127,8 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             {
                 if (mercFaction.Value.EmployerBlacklist.Contains(targetTeam)) continue;
                 ModInit.modLog?.Trace?.Write(
-                    $"[GetMercFactionPoolFromWeight] Processing weight for Merc group: {mercFaction.Value.MercFactionName}");
-                var factionValue = GetFactionValueFromString(mercFaction.Value.MercFactionName);
+                    $"[GetMercFactionPoolFromWeight] Processing weight for Merc group: {mercFaction.Key}");
+                var factionValue = GetFactionValueFromString(mercFaction.Key);
                 //var rep = sim.GetReputation(factionValue);
                 var weight = mercFaction.Value.AppearanceWeight;
                 for (int i = 0; i < weight; i++)
@@ -154,6 +143,18 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 factionValueInt = factionPool.GetRandomElement();
             }
             ModInit.modLog?.Info?.Write($"[GetMercFactionPoolFromWeight] Selected ID {factionValueInt}");
+            if (factionValueInt > 0)
+            {
+                var mercFactionValue = FactionEnumeration.GetFactionByID(factionValueInt);
+                if (ModInit.modSettings.MercFactionConfigs.ContainsKey(mercFactionValue.Name))
+                {
+                    mercFactionFallbackTag = ModInit.modSettings.MercFactionConfigs[mercFactionValue.Name]
+                        .MercFactionFallbackTag;
+                    return factionValueInt;
+                }
+            }
+            mercFactionFallbackTag = "";
+            ModInit.modLog?.Error?.Write($"[GetMercFactionPoolFromWeight] ERROR Getting mercFactionValue from int. Invalid config, probably key in MercFactionConfigs is not faction name");
             return factionValueInt;
         }
         public static bool ShouldReplaceOpforWithPlanetAlternate(ContractOverride contractOverride, out Classes.ConfigOptions.AlternateOpforConfig config)
@@ -183,29 +184,33 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             return false;
         }
 
-        public static int GetAlternateFactionPoolFromWeight(SimGameState sim, Classes.ConfigOptions.AlternateOpforConfig config)
+        public static int GetAlternateFactionPoolFromWeight(SimGameState sim, Classes.ConfigOptions.AlternateOpforConfig config, out string fallback)
         {
             var factionValueInt = -1;
-            var factionPool = new List<int>();
+            var factionPoolFlattened = new List<Classes.FactionWeightAndFallback>();
+            fallback = "";
             foreach (var altFaction in config.AlternateOpforWeights)
             {
                 ModInit.modLog?.Trace?.Write(
-                    $"[GetAlternateFactionPoolFromWeight] Processing weight for alt faction group: {altFaction.Key}");
-                var factionValue = GetFactionValueFromString(altFaction.Key);
+                    $"[GetAlternateFactionPoolFromWeight] Processing weight for alt faction group: {altFaction.FactionName}");
                 //var rep = sim.GetReputation(factionValue);
-                var weight = altFaction.Value;
+                var weight = altFaction.FactionWeight;
                 for (int i = 0; i < weight; i++)
                 {
-                    factionPool.Add(factionValue.ID);
+                    factionPoolFlattened.Add(altFaction);
                     ModInit.modLog?.Trace?.Write(
-                        $"[GetAlternateFactionPoolFromWeight] Added {factionValue.Name} to factionPool with ID {factionValue.ID}");
+                        $"[GetAlternateFactionPoolFromWeight] Added {altFaction.FactionName} to factionPool");
                 }
             }
-            if (factionPool.Count > 0)
+            if (factionPoolFlattened.Count > 0)
             {
-                factionValueInt = factionPool.GetRandomElement();
+                var selectedFactionConfig = factionPoolFlattened.GetRandomElement();
+                fallback = selectedFactionConfig.FactionFallback;
+                factionValueInt = GetFactionValueFromString(selectedFactionConfig.FactionName).ID;
+                ModInit.modLog?.Info?.Write($"[GetAlternateFactionPoolFromWeight] Selected faction {selectedFactionConfig.FactionName} with ID {factionValueInt} and fallback {selectedFactionConfig.FactionFallback}");
+                return factionValueInt;
             }
-            ModInit.modLog?.Info?.Write($"[GetAlternateFactionPoolFromWeight] Selected ID {factionValueInt}");
+            ModInit.modLog?.Error?.Write($"[GetAlternateFactionPoolFromWeight] Selected faction ID {factionValueInt}. Probably not good.");
             return factionValueInt;
         }
 
@@ -396,7 +401,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             mercTeam = new Team();
             //if (ModState.MercFactionTeamOverride != null) mercTeam = combat.Teams.First(x => x.GUID == "be77cadd-e245-4240-a93e-b99cc98902a5");
             //else 
-            if (ModState.HostileMercLanceTeamOverride != null) mercTeam = combat.Teams.First(x => x.GUID == GlobalVars.HostileMercLanceTeamDefinitionGUID);
+            if (ModState.HostileMercLanceTeamOverride.TeamOverride != null) mercTeam = combat.Teams.First(x => x.GUID == GlobalVars.HostileMercLanceTeamDefinitionGUID);
             if (mercTeam != null)
             {
                 var totalValue = 0;
@@ -519,7 +524,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                     LazySingletonBehavior<FogOfWarView>.Instance.FowSystem.Rebuild();
                     combat.RebuildAllLists();
                     playerSupportTeam.RebuildVisibilityCacheAllUnits(combat.GetAllLivingCombatants());
-                    PlayBribeResult(mercTeam.Combat, Guid.NewGuid().ToString(), teamOverride, mercTeam, 2);
+                    PlayBribeResult(mercTeam.Combat, Guid.NewGuid().ToString(), teamOverride.TeamOverride, mercTeam, 2);
                     sim.AddFunds(-mercBribe.Item2, null, false);
                     return 2;
                 }
@@ -531,13 +536,13 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                         var msg = new DespawnActorMessage(EncounterLayerData.MapLogicGuid, unit.GUID, (DeathMethod)DespawnFloatieMessage.Escaped);
                         Utils._despawnActorMethod.Invoke(unit, new object[] { msg });
                     }
-                    PlayBribeResult(mercTeam.Combat, Guid.NewGuid().ToString(), teamOverride, mercTeam, 1);
+                    PlayBribeResult(mercTeam.Combat, Guid.NewGuid().ToString(), teamOverride.TeamOverride, mercTeam, 1);
                     sim.AddFunds(-mercBribe.Item2, null, false);
                     return 1;
                 }
             }
             ModInit.modLog?.Trace?.Write($"[ProcessBribeRoll] Bribe failure! Doing nothing.");
-            PlayBribeResult(mercTeam.Combat, Guid.NewGuid().ToString(), teamOverride, mercTeam, 0);
+            PlayBribeResult(mercTeam.Combat, Guid.NewGuid().ToString(), teamOverride.TeamOverride, mercTeam, 0);
             sim.AddFunds(-Mathf.RoundToInt(mercBribe.Item2 * .5f), null, false);
             return 0;
         }

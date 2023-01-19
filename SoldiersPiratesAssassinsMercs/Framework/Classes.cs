@@ -1,20 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BattleTech;
-using BattleTech.Data;
+﻿using System.Collections.Generic;
 using BattleTech.Framework;
-using HBS;
-using MissionControl.Data;
-using MissionControl.Logic;
-using UnityEngine;
 
 namespace SoldiersPiratesAssassinsMercs.Framework
 {
     public class Classes
     {
+        public class SPAMTeamOverride
+        {
+            public TeamOverride TeamOverride { get; set; }
+            public string TeamOverrideFallback;
+
+            public SPAMTeamOverride()
+            {
+                TeamOverride = null;
+                TeamOverrideFallback = null;
+            }
+            public SPAMTeamOverride(TeamOverride teamOverride, string teamOverrideFallback)
+            {
+                TeamOverride = teamOverride;
+                TeamOverrideFallback = teamOverrideFallback;
+            }
+        }
         public class ConfigOptions
         {
             public class OpforReplacementConfig
@@ -35,7 +41,8 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             }
             public class MercFactionConfig
             {
-                public string MercFactionName = ""; //e,g, KellHounds or RazorbackMercs
+                //public string MercFactionName = ""; //e,g, KellHounds or RazorbackMercs
+                public string MercFactionFallbackTag = "";
                 public int AppearanceWeight = 0; //base "weight" for selection
                 //public float AppearanceWeightRepFactor = 0f; //additional "weight" as factor of times previously faced (internal counter)
                 public List<string> EmployerBlacklist = new List<string>();
@@ -48,9 +55,16 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             {
                 public float FactionReplaceChance = 0f;
                 public float FactionMCAdditionalLanceReplaceChance = 0f;
-                public Dictionary<string, int> AlternateOpforWeights = new Dictionary<string, int>();
+                public List<FactionWeightAndFallback> AlternateOpforWeights = new List<FactionWeightAndFallback>();
             }
         }
+
+        public class FactionWeightAndFallback
+        {
+            public string FactionName = "";
+            public int FactionWeight = 0;
+            public string FactionFallback = "";
+        } 
         public class MercDialogueBucket //is value for dictionary where key = PersonalityAttributes
         {
             public List<string> Dialogue = new List<string>();
