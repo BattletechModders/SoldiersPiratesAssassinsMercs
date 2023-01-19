@@ -90,9 +90,9 @@ mod.json settings:
 * `FactionReplaceChance` - float, probability that original target faction will be replaced by one of these
 * `FactionMCAdditionalLanceReplaceChance` - float, probability that MissionControl AdditionalLances (if any) will be replaced with alt faction
 * `AlternateOpforWeights` - list of new class FactionWeightAndFallback. Each entry in list must have:
-*-- 	`FactionName` - string, name of faction from Faction.json (i.e EmeraldDawn)
-*-- 	`FactionWeight` - integer weight for this merc faction to be used for replacement (relative to other configured factions in AlternateOpforWeights)
-*-- 	`FactionFallback` - primary fallback unit tag to use if the unit replacer cannot find a unit that matches the lance/unit selector tag for the chosen alternate faction. If this also fails, generic FallbackUnitFactionTag below will be used.
+  * `FactionName` - string, name of faction from Faction.json (i.e EmeraldDawn)
+  * `FactionWeight` - integer weight for this merc faction to be used for replacement (relative to other configured factions in AlternateOpforWeights)
+  * `FactionFallback` - string, primary fallback unit tag to use if the unit replacer cannot find a unit that matches the lance/unit selector tag for the chosen alternate faction. If this also fails, generic FallbackUnitFactionTag below will be used.
  
 `PlanetFactionConfigs` - Dictionary of configs for alternate factions specific to certain planets. The KEYS for this dictionary are starsystem IDs, e.g. `starsystemdef_Ichlangis`. **Important** if a faction is chosen to replace a MissionControl AdditionalLance, it will spawn as HOSTILE TO ALL, basically turning the contract into a 3 way battle. Otherwise, config is identical to AlternateFactionConfigs.
  
