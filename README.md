@@ -96,7 +96,7 @@ mod.json settings:
  
 `PlanetFactionConfigs` - Dictionary of configs for alternate factions specific to certain planets. The KEYS for this dictionary are starsystem IDs, e.g. `starsystemdef_Ichlangis`. **Important** if a faction is chosen to replace a MissionControl AdditionalLance, it will spawn as HOSTILE TO ALL, basically turning the contract into a 3 way battle. Otherwise, config is identical to AlternateFactionConfigs.
  
-`MercFactionConfigs` - Dictionary of configs for Merc Faction behavior. Merc factions *must* be real, valid factions. They have to have a FactionDef, and be defined in Faction.json. In particular, Faction.json must have them with IsRealFaction and IsMercenary set to true. They do *not* have to be set to gain reputation, nor do they need to be IsCareerStartingDisplayFaction and display in the Cpt Quarters reputation screen.
+`MercFactionConfigs` - Dictionary of configs for Merc Faction behavior. Merc factions *must* be real, valid factions. They have to have a FactionDef, and be defined in Faction.json. In particular, Faction.json must have them with IsRealFaction ~~and IsMercenary~~ set to true. They do *not* have to be set to gain reputation, do not need to appear as procedural contract targets or employers, nor do they need to be IsCareerStartingDisplayFaction and display in the Cpt Quarters reputation screen. Basic one-off factions like EdCorbu or ProfHorvat are good minimal templates to use.
  
  The KEYS for this dictionary are the faction Names for the configured merc factions, i.e KellHounds (same field as Liao, Davion, Locals, etc). If a merc faction exists but is missing from this dictionary, it will not be used by SPAM!:
  
