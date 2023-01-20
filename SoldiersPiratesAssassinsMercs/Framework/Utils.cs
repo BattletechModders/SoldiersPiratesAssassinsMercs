@@ -125,7 +125,8 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             var factionPool = new List<int>();
             foreach (var mercFaction in ModInit.modSettings.MercFactionConfigs)
             {
-                if (mercFaction.Value.EmployerBlacklist.Contains(targetTeam)) continue;
+                if (mercFaction.Value.RestrictionIsWhitelist && !mercFaction.Value.EmployerRestrictions.Contains(targetTeam)) continue;
+                if (!mercFaction.Value.RestrictionIsWhitelist && mercFaction.Value.EmployerRestrictions.Contains(targetTeam)) continue;
                 ModInit.modLog?.Trace?.Write(
                     $"[GetMercFactionPoolFromWeight] Processing weight for Merc group: {mercFaction.Key}");
                 var factionValue = GetFactionValueFromString(mercFaction.Key);

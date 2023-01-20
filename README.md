@@ -60,7 +60,8 @@ mod.json settings:
 			"Blahaj": {
 				"MercFactionFallbackTag": "ClanJadeFalcon",
 				"AppearanceWeight": 1,
-				"EmployerBlacklist": [
+				"RestrictionIsWhitelist": true,
+				"EmployerRestrictions": [
 					"Liao"
 				],
 				"UnitRating": 1,
@@ -105,7 +106,8 @@ mod.json settings:
 * ~~`MercFactionName` - string, should be same as the KEY; the faction Name.~~ deprecated, KEY should just be faction Name (from Faction.json), i.e Liao, KellHounds, EdCorbu, etc
 * `MercFactionFallbackTag` - primary fallback unit tag to use if the unit replacer cannot find a unit that matches the lance/unit selector tag for the chosen merc faction. If this also fails, generic FallbackUnitFactionTag below will be used.
 * `AppearanceWeight` - integer weight for this merc faction to be used for replacement (relative to other configured merc factions)
-* `EmployerBlacklist` - list, strings; "employer" blacklist for merc faction. I.e KellHounds will never replace (be hired) by Liao.
+* `RestrictionIsWhitelist` - bool, defines behavior of EmployerRestrictions for this faction
+* `EmployerRestrictions` - list, strings; whitelist/blacklist for "employer" for merc faction. behavior controlled by RestrictionIsWhitelist
 * `UnitRating` - integer MRB unit rating for the merc faction. Calculates based on a 13 point system, as MRB ratings are given as an A+ through D- scale. We've added an F for NotRated. Merc Units that are NotRated get a 1, D- gets 2, A+ gets 13.
 * `PersonalityAttributes` - list of PersonalityAttributes that will determine the "pool" of randomly generated dialogue pulled from the Dialogue.json
 
