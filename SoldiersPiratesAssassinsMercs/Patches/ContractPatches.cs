@@ -446,7 +446,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
                     //do lance prep stuff? -> probably need to call generate units, etc etc etc
                     ModInit.modLog?.Info?.Write(
-                        $"[Contract_BeginRequestResources] Set hostile lance override to {ModState.HostileToAllLanceTeamOverride?.TeamOverride.faction}; {ModState.HostileMercLanceTeamOverride?.TeamOverride.FactionValue?.Name}; {ModState.HostileMercLanceTeamOverride?.TeamOverride.FactionDef?.Name}, will be used if contract has AdditionalLances. Reinitializing MissionControl");
+                        $"[Contract_BeginRequestResources] Set hostile planet lance override to {ModState.HostileToAllLanceTeamOverride?.TeamOverride.faction}; {ModState.HostileMercLanceTeamOverride?.TeamOverride.FactionValue?.Name}; {ModState.HostileMercLanceTeamOverride?.TeamOverride.FactionDef?.Name}, will be used if contract has AdditionalLances. Reinitializing MissionControl");
                     ModState.HostileToAllLanceTeamOverride?.TeamOverride.ProcessHeraldryLoadRequest(sim);
                     global::MissionControl.MissionControl.Instance.SetContract(__instance);
                     //                    ModState.HostileMercLanceTeamOverride.RunMadLibs(__instance, sim.DataManager);
@@ -471,8 +471,8 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
                     //do lance prep stuff? -> probably need to call generate units, etc etc etc
                     ModInit.modLog?.Info?.Write(
-                        $"[Contract_BeginRequestResources] Set hostile merc lance override to {ModState.HostileMercLanceTeamOverride?.TeamOverride.faction}; {ModState.HostileMercLanceTeamOverride?.TeamOverride.FactionValue?.Name}; {ModState.HostileMercLanceTeamOverride?.TeamOverride.FactionDef?.Name}, will be used if contract has AdditionalLances. Reinitializing MissionControl");
-                    ModState.HostileAltLanceTeamOverride.TeamOverride.ProcessHeraldryLoadRequest(sim);
+                        $"[Contract_BeginRequestResources] Set hostile alt lance override to {ModState.HostileAltLanceTeamOverride?.TeamOverride.faction}; {ModState.HostileAltLanceTeamOverride?.TeamOverride.FactionValue?.Name}; {ModState.HostileAltLanceTeamOverride?.TeamOverride.FactionDef?.Name}, will be used if contract has AdditionalLances. Reinitializing MissionControl");
+                    ModState.HostileAltLanceTeamOverride?.TeamOverride.ProcessHeraldryLoadRequest(sim);
                     global::MissionControl.MissionControl.Instance.SetContract(__instance);
 //                    ModState.HostileMercLanceTeamOverride.RunMadLibs(__instance, sim.DataManager);
 //                    ModState.HostileMercLanceTeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, __instance.Override.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
