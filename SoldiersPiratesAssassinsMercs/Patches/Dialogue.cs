@@ -46,31 +46,33 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     dialogueTeam = __instance.Combat.Teams.First(x => x.GUID == "be77cadd-e245-4240-a93e-b99cc98902a5"); // targetteam GUID, const
                     chattyFaction.TryFetchMercDialogue(dialogueTeam, numFaced, sim, out dialogue);
                 }
-                else if (ModState.HostileMercLanceTeamOverride.TeamOverride != null)
+                else if (MissionControl.MissionControl.Instance.Metrics.NumberOfTargetAdditionalLances > 0)
                 {
-                    numFaced = ModState.HostileMercLanceTeamOverride.TeamOverride.GetMercFactionStat(sim);
-                    chattyFaction = ModState.HostileMercLanceTeamOverride.TeamOverride;
-                    dialogueTeam = __instance.Combat.Teams.First(x => x.GUID == GlobalVars.HostileMercLanceTeamDefinitionGUID);
-                    chattyFaction.TryFetchMercDialogue(dialogueTeam, numFaced, sim, out dialogue);
+                    if (ModState.HostileMercLanceTeamOverride.TeamOverride != null)
+                    {
+                        numFaced = ModState.HostileMercLanceTeamOverride.TeamOverride.GetMercFactionStat(sim);
+                        chattyFaction = ModState.HostileMercLanceTeamOverride.TeamOverride;
+                        dialogueTeam = __instance.Combat.Teams.First(x => x.GUID == GlobalVars.HostileMercLanceTeamDefinitionGUID);
+                        chattyFaction.TryFetchMercDialogue(dialogueTeam, numFaced, sim, out dialogue);
+                    }
+
+                    else if (ModState.HostileToAllLanceTeamOverride.TeamOverride != null)
+                    {
+                        numFaced = ModState.HostileToAllLanceTeamOverride.TeamOverride.GetMercFactionStat(sim);
+                        chattyFaction = ModState.HostileToAllLanceTeamOverride.TeamOverride;
+                        dialogueTeam = __instance.Combat.Teams.First(x => x.GUID == GlobalVars.HostileToAllLanceTeamDefinitionGUID);
+                        chattyFaction.TryFetchGenericDialogue(dialogueTeam, numFaced, sim, out dialogue);
+                    }
+
+                    else if (ModState.HostileAltLanceTeamOverride.TeamOverride != null)
+                    {
+                        numFaced = ModState.HostileAltLanceTeamOverride.TeamOverride.GetMercFactionStat(sim);
+                        chattyFaction = ModState.HostileAltLanceTeamOverride.TeamOverride;
+                        dialogueTeam = __instance.Combat.Teams.First(x => x.GUID == GlobalVars.HostileAltLanceTeamDefinitionGUID);
+                        chattyFaction.TryFetchGenericDialogue(dialogueTeam, numFaced, sim, out dialogue);
+                    }
                 }
 
-                else if (ModState.HostileToAllLanceTeamOverride.TeamOverride != null)
-                {
-                    numFaced = ModState.HostileToAllLanceTeamOverride.TeamOverride.GetMercFactionStat(sim);
-                    chattyFaction = ModState.HostileToAllLanceTeamOverride.TeamOverride;
-                    dialogueTeam = __instance.Combat.Teams.First(x => x.GUID == GlobalVars.HostileToAllLanceTeamDefinitionGUID);
-                    chattyFaction.TryFetchGenericDialogue(dialogueTeam, numFaced, sim, out dialogue);
-                }
-
-                else if (ModState.HostileAltLanceTeamOverride.TeamOverride != null)
-                {
-                    numFaced = ModState.HostileAltLanceTeamOverride.TeamOverride.GetMercFactionStat(sim);
-                    chattyFaction = ModState.HostileAltLanceTeamOverride.TeamOverride;
-                    dialogueTeam = __instance.Combat.Teams.First(x => x.GUID == GlobalVars.HostileAltLanceTeamDefinitionGUID);
-                    chattyFaction.TryFetchGenericDialogue(dialogueTeam, numFaced, sim, out dialogue);
-                }
-
-                //if (chattyFaction == null) return;
                 //if (!ModInit.modSettings.MercFactionConfigs.ContainsKey(chattyFaction.FactionValue.Name)) return;
 
                 if (dialogue == Array.Empty<DialogueContent>()) return;
@@ -111,7 +113,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
     {
         public static void Postfix(Team __instance)
         {
-            if (ModState.HostileMercLanceTeamOverride.TeamOverride != null)
+            if (MissionControl.MissionControl.Instance.Metrics.NumberOfTargetAdditionalLances < 1 && ModState.HostileMercLanceTeamOverride.TeamOverride != null)
             {
                 if (ModState.RoundsInCombat <= 1 && __instance.IsLocalPlayer && __instance.Combat.TurnDirector.IsInterleaved)
                 {
@@ -129,6 +131,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         {
             var sim = UnityGameInstance.BattleTechGame.Simulation;
             if (sim == null) return;
+            if (MissionControl.MissionControl.Instance.Metrics.NumberOfTargetAdditionalLances < 1) return;
             if (__instance.ActiveTurnActor is Team team && team.IsLocalPlayer && ModState.RoundsInCombat > 1 && !ModState.HasBribeBeenAttempted)
             {
                 Tuple<float, int>[] results;
@@ -192,6 +195,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         static bool Prepare() => false; // disable, not doing ability?
         public static void Postfix(Team __instance, AbstractActor unit)
         {
+            if (MissionControl.MissionControl.Instance.Metrics.NumberOfTargetAdditionalLances < 1) return;
             if (ModState.HostileMercLanceTeamOverride.TeamOverride != null)
             {
                 if (__instance.IsLocalPlayer && unit.GetPilot().IsPlayerCharacter)
@@ -229,7 +233,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         {
             if (creator == null) return;
             if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
-
+            if (MissionControl.MissionControl.Instance.Metrics.NumberOfTargetAdditionalLances < 1) ;
             if (__instance.IsAvailable)
             {
                 if (target is AbstractActor targetActor)

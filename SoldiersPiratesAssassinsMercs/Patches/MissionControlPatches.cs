@@ -129,6 +129,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         {
             public static void Postfix(ContractOverride contractOverride, string lanceGuid, ref TeamOverride __result)
             {
+                if (MissionControl.MissionControl.Instance.Metrics.NumberOfTargetAdditionalLances < 1) return;
                 if (__result == null)
                 {
                     if (ModState.HostileToAllLanceTeamOverride.TeamOverride != null)

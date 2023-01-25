@@ -139,23 +139,28 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                         $"[GetMercFactionPoolFromWeight] Added {factionValue.Name} to factionPool with ID {factionValue.ID}");
                 }
             }
+
             if (factionPool.Count > 0)
             {
                 factionValueInt = factionPool.GetRandomElement();
-            }
-            ModInit.modLog?.Info?.Write($"[GetMercFactionPoolFromWeight] Selected ID {factionValueInt}");
-            if (factionValueInt > 0)
-            {
-                var mercFactionValue = FactionEnumeration.GetFactionByID(factionValueInt);
-                if (ModInit.modSettings.MercFactionConfigs.ContainsKey(mercFactionValue.Name))
+
+                ModInit.modLog?.Info?.Write($"[GetMercFactionPoolFromWeight] Selected ID {factionValueInt}");
+                if (factionValueInt > 0)
                 {
-                    mercFactionFallbackTag = ModInit.modSettings.MercFactionConfigs[mercFactionValue.Name]
-                        .MercFactionFallbackTag;
-                    return factionValueInt;
+                    var mercFactionValue = FactionEnumeration.GetFactionByID(factionValueInt);
+                    if (ModInit.modSettings.MercFactionConfigs.ContainsKey(mercFactionValue.Name))
+                    {
+                        mercFactionFallbackTag = ModInit.modSettings.MercFactionConfigs[mercFactionValue.Name]
+                            .MercFactionFallbackTag;
+                        return factionValueInt;
+                    }
                 }
+                mercFactionFallbackTag = "";
+                ModInit.modLog?.Error?.Write($"[GetMercFactionPoolFromWeight] ERROR Getting mercFactionValue from int. Invalid config, probably key in MercFactionConfigs is not faction name");
+                return factionValueInt;
             }
             mercFactionFallbackTag = "";
-            ModInit.modLog?.Error?.Write($"[GetMercFactionPoolFromWeight] ERROR Getting mercFactionValue from int. Invalid config, probably key in MercFactionConfigs is not faction name");
+            ModInit.modLog?.Info?.Write($"[GetMercFactionPoolFromWeight] No usable merc factions in pool, probably nothing usable from whitelist/blacklist");
             return factionValueInt;
         }
         public static bool ShouldReplaceOpforWithPlanetAlternate(ContractOverride contractOverride, out Classes.ConfigOptions.AlternateOpforConfig config)

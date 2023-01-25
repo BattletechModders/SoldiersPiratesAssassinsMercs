@@ -354,6 +354,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
                     ModInit.modLog?.Info?.Write(
                         $"[Contract_BeginRequestResources] Set ModState.AltPlanetFactionTeamOverride to {ModState.PlanetAltFactionTeamOverride?.TeamOverride.faction}, original was {ModState.OriginalTargetFactionTeamOverride?.faction}. TargetTeam is now {__instance.Override.targetTeam.FactionValue.Name}. Reinitializing MissionControl");
+                    __instance.Override.RunMadLibs(sim.DataManager);
                     global::MissionControl.MissionControl.Instance.SetContract(__instance);
                     return;
                 }
@@ -386,6 +387,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
                     ModInit.modLog?.Info?.Write(
                         $"[Contract_BeginRequestResources] Set ModState.AltFactionFactionTeamOverride to {ModState.AltFactionFactionTeamOverride?.TeamOverride.faction}, original was {ModState.OriginalTargetFactionTeamOverride?.faction}. TargetTeam is now {__instance.Override.targetTeam.FactionValue.Name}. Reinitializing MissionControl");
+                    __instance.Override.RunMadLibs(sim.DataManager);
                     global::MissionControl.MissionControl.Instance.SetContract(__instance);
                     return;
                 }
@@ -423,6 +425,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
                     ModInit.modLog?.Info?.Write(
                         $"[Contract_BeginRequestResources] Set ModState.MercFactionForReplacement to {ModState.MercFactionTeamOverride?.TeamOverride.faction}, original was {ModState.OriginalTargetFactionTeamOverride?.faction}. TargetTeam is now {__instance.Override.targetTeam.FactionValue.Name}. Reinitializing MissionControl");
+                    __instance.Override.RunMadLibs(sim.DataManager);
                     global::MissionControl.MissionControl.Instance.SetContract(__instance);
                     return;
                 }
