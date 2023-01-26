@@ -543,7 +543,8 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                     foreach (var unit in mercTeam.units)
                     {
                         var msg = new DespawnActorMessage(EncounterLayerData.MapLogicGuid, unit.GUID, (DeathMethod)DespawnFloatieMessage.Escaped);
-                        Utils._despawnActorMethod.Invoke(unit, new object[] { msg });
+                        unit.DespawnActor(msg);
+                        //Utils._despawnActorMethod.Invoke(unit, new object[] { msg });
                     }
                     PlayBribeResult(mercTeam.Combat, Guid.NewGuid().ToString(), teamOverride.TeamOverride, mercTeam, 1);
                     sim.AddFunds(-mercBribe.Item2, null, false);
