@@ -25,10 +25,10 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             }
             public override void Run(RunPayload payload)
             {
-                ModInit.modLog?.Trace?.Write($"[AddLanceToAltTeam - MC OVERRIDE] Adding lance to alt team {ModState.AltFactionFactionTeamOverride.TeamOverride.FactionValue.Name}");
+                ModInit.modLog?.Trace?.Write($"[AddLanceToAltTeam - MC OVERRIDE] Adding lance to alt team {ModState.HostileAltLanceTeamOverride.TeamOverride.FactionValue.Name}");
                 MissionControl.Main.Logger.Log("[SPAM - AddLanceToAltTeam - SPAM] Adding lance to alt team");
                 ContractOverride contractOverride = ((ContractOverridePayload)payload).ContractOverride;
-                TeamOverride targetTeam = ModState.AltFactionFactionTeamOverride.TeamOverride;
+                TeamOverride targetTeam = ModState.HostileAltLanceTeamOverride.TeamOverride;
                 LanceOverride lanceOverride = (this.manuallySpecifiedLance == null) ? SelectAltLanceOverride("enemy").Copy() : this.manuallySpecifiedLance.Copy();
                 lanceOverride.name = $"Lance_Enemy_OpposingForce_{this.lanceGuid}";
                 if (this.unitGuids.Count > 4)
@@ -55,8 +55,8 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 targetTeam.lanceOverrideList.Add(lanceOverride);
                 ModInit.modLog?.Trace?.Write($"[AddLanceToAltTeam - MC OVERRIDE] Added {lanceOverride.lanceDefId} to lanceOverrideList override list");
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
-                ModState.AltFactionFactionTeamOverride.TeamOverride.RunMadLibs(contractOverride.contract, sim.DataManager);
-                ModState.AltFactionFactionTeamOverride.TeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, contractOverride.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
+                ModState.HostileAltLanceTeamOverride.TeamOverride.RunMadLibs(contractOverride.contract, sim.DataManager);
+                ModState.HostileAltLanceTeamOverride.TeamOverride.GenerateTeam(MetadataDatabase.Instance, sim.DataManager, contractOverride.finalDifficulty, sim.CurrentDate, sim.CompanyTags);
 
             }
 

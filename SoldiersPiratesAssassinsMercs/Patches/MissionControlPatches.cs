@@ -21,7 +21,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 {
                     var objectiveName2 = $"Destroy {ModState.HostileToAllLanceTeamOverride.TeamOverride.FactionDef.Demonym} Lance";
                     ModInit.modLog?.Trace?.Write(
-                        $"[AddTargetLanceWithDestroyObjectiveBatch_Constructor] Running SPAM for AddLance. Contract should be spawning support lances?; debug objective name :{objectiveName2} vs original {objectiveName}");
+                        $"[AddTargetLanceWithDestroyObjectiveBatch_Constructor] Running SPAM for Hostile To All AddLance. Contract should be spawning support lances?; debug objective name :{objectiveName2} vs original {objectiveName}");
                     int numberOfUnitsInLance = 4;
                     string lanceGuid = Guid.NewGuid().ToString();
                     //string contractObjectiveGuid = Guid.NewGuid().ToString(); //unused
@@ -55,7 +55,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 {
                     var objectiveName2 = $"Destroy {ModState.HostileAltLanceTeamOverride.TeamOverride.FactionDef.Demonym} Lance";
                     ModInit.modLog?.Trace?.Write(
-                        $"[AddTargetLanceWithDestroyObjectiveBatch_Constructor] Running SPAM for AddLanceToMercTeam. Contract should be spawning support lances?debug objective name :{objectiveName2} vs original {objectiveName}");
+                        $"[AddTargetLanceWithDestroyObjectiveBatch_Constructor] Running SPAM for Hostile Alt Lance. Contract should be spawning support lances?debug objective name :{objectiveName2} vs original {objectiveName}");
                     int numberOfUnitsInLance = 4;
                     string lanceGuid = Guid.NewGuid().ToString();
                     //string contractObjectiveGuid = Guid.NewGuid().ToString(); //unused
@@ -89,7 +89,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 else if (ModState.HostileMercLanceTeamOverride.TeamOverride != null)
                 {
                     var objectiveName2 = $"Destroy {ModState.HostileMercLanceTeamOverride.TeamOverride.FactionDef.Demonym} Lance"; ModInit.modLog?.Trace?.Write(
-                        $"[AddTargetLanceWithDestroyObjectiveBatch_Constructor] Running SPAM for AddLanceToMercTeam. Contract should be spawning support lances?debug objective name :{objectiveName2} vs original {objectiveName}");
+                        $"[AddTargetLanceWithDestroyObjectiveBatch_Constructor] Running SPAM for Hostile Merc Lance. Contract should be spawning support lances?debug objective name :{objectiveName2} vs original {objectiveName}");
                     int numberOfUnitsInLance = 4;
                     string lanceGuid = Guid.NewGuid().ToString();
                     //string contractObjectiveGuid = Guid.NewGuid().ToString(); //unused

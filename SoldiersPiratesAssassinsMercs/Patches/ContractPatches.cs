@@ -449,7 +449,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
                     //do lance prep stuff? -> probably need to call generate units, etc etc etc
                     ModInit.modLog?.Info?.Write(
-                        $"[Contract_BeginRequestResources] Set hostile planet lance override to {ModState.HostileToAllLanceTeamOverride?.TeamOverride.faction}; {ModState.HostileMercLanceTeamOverride?.TeamOverride.FactionValue?.Name}; {ModState.HostileMercLanceTeamOverride?.TeamOverride.FactionDef?.Name}, will be used if contract has AdditionalLances. Reinitializing MissionControl");
+                        $"[Contract_BeginRequestResources] Set hostile planet lance override to {ModState.HostileToAllLanceTeamOverride?.TeamOverride.faction}; {ModState.HostileToAllLanceTeamOverride?.TeamOverride.FactionValue?.Name}; {ModState.HostileToAllLanceTeamOverride?.TeamOverride.FactionDef?.Name}, will be used if contract has AdditionalLances. Reinitializing MissionControl");
                     ModState.HostileToAllLanceTeamOverride?.TeamOverride.ProcessHeraldryLoadRequest(sim);
                     global::MissionControl.MissionControl.Instance.SetContract(__instance);
                     //                    ModState.HostileMercLanceTeamOverride.RunMadLibs(__instance, sim.DataManager);
@@ -619,8 +619,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
             {
                 //check if merc lance needs to use fallback tag
                 ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] Running GetMatchingUnitDefs");
-                var tags = requiredTags.ToArray();
-                ModInit.modLog?.Trace?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] TAGSPAM {string.Join(", ",tags)}");
+                ModInit.modLog?.Trace?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] TAGSPAM {string.Join(", ",requiredTags.items)}");
                 if (ModState.PlanetAltFactionTeamOverride.TeamOverride != null)
                 {
                     var altFactionLowerCased = ModState.PlanetAltFactionTeamOverride.TeamOverride.FactionValue.Name.ToLower();
@@ -637,11 +636,11 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                                 requiredTags.Add(ModState.PlanetAltFactionTeamOverride.TeamOverrideFallback.ToLower());
                                 var fallBackDefs = Utils.GetMatchingUnitDefsOriginal(mdd, requiredTags, excludedTags, checkOwnership,
                                     currentDate, companyTags);
-                                ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing alt faction tag: {altFactionLowerCased}" +
+                                ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing alt planet faction tag: {altFactionLowerCased}" +
                                                             $"and replacing with faction fallback tag: {ModState.PlanetAltFactionTeamOverride.TeamOverrideFallback.ToLower()}");
                                 if (fallBackDefs.Count == 0)
                                 {
-                                    ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Faction result failed, removing alt faction tag: {ModState.PlanetAltFactionTeamOverride.TeamOverrideFallback.ToLower()} " +
+                                    ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Faction result failed, removing alt planet faction tag: {ModState.PlanetAltFactionTeamOverride.TeamOverrideFallback.ToLower()} " +
                                                                 $"and replacing with generic fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
 
                                     requiredTags.Remove(ModState.PlanetAltFactionTeamOverride.TeamOverrideFallback.ToLower());
@@ -652,7 +651,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                             }
                             requiredTags.Remove(altFactionLowerCased);
                             requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag.ToLower());
-                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing alt faction tag: {altFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
+                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Original result failed, removing alt planet faction tag: {altFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
                             return;
                         }
                         ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [TargetTeam Override] Proceeding using original requiredTags.");

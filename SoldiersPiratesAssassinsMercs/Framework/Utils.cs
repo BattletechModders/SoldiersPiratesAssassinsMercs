@@ -23,8 +23,10 @@ namespace SoldiersPiratesAssassinsMercs.Framework
 
         public static List<UnitDef_MDD> GetMatchingUnitDefsOriginal(MetadataDatabase mdd, TagSet requiredTags, TagSet excludedTags, bool checkOwnership, DateTime? currentDate, TagSet companyTags)
         {
+            ModInit.modLog?.Trace?.Write($"[GetMatchingUnitDefsOriginal] TAGSPAM {string.Join(", ", requiredTags.items)}");
             List<UnitDef_MDD> matchingDataByTagSet = mdd.GetMatchingDataByTagSet<UnitDef_MDD>(TagSetType.UnitDef, requiredTags, excludedTags, "UnitDef", "", checkOwnership, "UnitDefID");
             matchingDataByTagSet.RemoveAll((UnitDef_MDD unitDef) => !mdd.CanRandomlySelectUnitDef(unitDef, currentDate, companyTags));
+            ModInit.modLog?.Trace?.Write($"[GetMatchingUnitDefsOriginal] Found {matchingDataByTagSet.Count} matching unitDefs.");
             return matchingDataByTagSet;
         }
 
@@ -124,6 +126,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
             var factionValueInt = -1;
             var factionPool = new List<int>();
             foreach (var mercFaction in ModInit.modSettings.MercFactionConfigs)
+
             {
                 if (mercFaction.Value.RestrictionIsWhitelist && !mercFaction.Value.EmployerRestrictions.Contains(targetTeam)) continue;
                 if (!mercFaction.Value.RestrictionIsWhitelist && mercFaction.Value.EmployerRestrictions.Contains(targetTeam)) continue;
