@@ -837,7 +837,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                             }
                             requiredTags.Remove(mercLanceFactionLowerCased);
                             requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag.ToLower());
-                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [AdditionalLance Override] Original result failed, removing merc faction tag: {mercFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
+                            ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [AdditionalLance Override] Original result failed, removing merc faction tag: {mercLanceFactionLowerCased} and replacing with fallback tag: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
                             return;
                         }
                         ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [AdditionalLance Override] Proceeding using original requiredTags.");
