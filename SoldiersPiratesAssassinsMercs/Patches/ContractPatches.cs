@@ -1037,9 +1037,9 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     ModInit.modLog?.Info?.Write($"[AAR_FactionReputationResultWidget_InitializeData_Patch] Processing reputation change for alt faction due to support lance deployment.");
                     var faction = UnityGameInstance.BattleTechGame.DataManager.Factions
                         .FirstOrDefault(x =>
-                            x.Value.FactionValue.Name == ModState.HostileToAllLanceTeamOverride?.TeamOverride.FactionValue.Name)
+                            x.Value.FactionValue.Name == ModState.HostileAltLanceTeamOverride?.TeamOverride.FactionValue.Name)
                         .Value;
-                    ModState.HostileToAllLanceTeamOverride?.TeamOverride.UpdateMercFactionStats(theSimState);
+                    ModState.HostileAltLanceTeamOverride?.TeamOverride.UpdateMercFactionStats(theSimState);
                     if (faction != null)
                     {
                         if (faction.FactionValue.DoesGainReputation) //TargetVsEmployer
