@@ -329,6 +329,11 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 if (Utils.ShouldReplaceOpforWithPlanetAlternate(__instance.Override, out var configPlanet))
                 {
                     var planetFaction = Utils.GetAlternateFactionPoolFromWeight(sim, configPlanet, out var fallback);
+                    if (planetFaction < 1)
+                    {
+                        ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] No faction found for location-alternate, likely config error.");
+                        return;
+                    }
                     ModState.OriginalTargetFactionTeamOverride = __instance.Override.targetTeam.Copy();
 
                     var contractFactionIDs = __instance.teamFactionIDs;
@@ -361,9 +366,13 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 else if (Utils.ShouldReplaceOpforWithFactionAlternate(__instance.Override, out var configAlt))
                 {
                     var altFaction = Utils.GetAlternateFactionPoolFromWeight(sim, configAlt, out var fallback);
+                    if (altFaction < 1)
+                    {
+                        ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] No faction found for alternate, likely config error."); 
+                        return;
+                    }
                     ModState.OriginalTargetFactionTeamOverride = __instance.Override.targetTeam.Copy();
-
-
+                    
                     var contractFactionIDs = __instance.teamFactionIDs;
                     if (contractFactionIDs.ContainsKey(__instance.Override.targetTeam.teamGuid))
                     {
@@ -394,9 +403,9 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                 else if (Utils.ShouldReplaceOpforWithMercs(__instance.Override))
                 {
                     var mercFaction = Utils.GetMercFactionPoolFromWeight(sim, __instance.Override.targetTeam.faction, out var fallbackTag);
-                    if (mercFaction == -1)
+                    if (mercFaction < 1)
                     {
-                        ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] Selected MercFaction [-1], aborting. No valid merc factions for employer, probably.");
+                        ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] No faction found for mercs, likely config error."); 
                         return;
                     }
                     ModState.OriginalTargetFactionTeamOverride = __instance.Override.targetTeam.Copy();
@@ -436,9 +445,9 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
                 {
                     var hostileToAllFaction = Utils.GetAlternateFactionPoolFromWeight(sim, configPlanetLance, out var fallback);
-                    if (hostileToAllFaction == -1)
+                    if (hostileToAllFaction < 1)
                     {
-                        ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] Selected faction [-1], aborting. No valid planet factions for employer, probably.");
+                        ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] No faction found for location alternate lance, likely config error.");
                         return;
                     }
                     //ModState.HostileToAllLanceTeamOverride = new Tuple<TeamOverride, string>(new TeamOverride(GlobalVars.HostileToAllLanceTeamDefinitionGUID,
@@ -460,9 +469,9 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
                 {
                     var hostileAltLanceFaction = Utils.GetAlternateFactionPoolFromWeight(sim, configAltLance, out var fallback);
-                    if (hostileAltLanceFaction == -1)
+                    if (hostileAltLanceFaction < 1)
                     {
-                        ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] Selected  [-1], aborting. No valid factions for employer, probably.");
+                        ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] No faction found for alt lance, likely config error.");
                         return;
                     }
 
@@ -486,9 +495,9 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 
                 {
                     var hostileMercLanceFaction = Utils.GetMercFactionPoolFromWeight(sim, __instance.Override.targetTeam.faction, out var fallbackTag);
-                    if (hostileMercLanceFaction == -1)
+                    if (hostileMercLanceFaction < 1)
                     {
-                        ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] Selected MercFaction [-1], aborting. No valid merc factions for employer, probably.");
+                        ModInit.modLog?.Error?.Write($"[Contract_BeginRequestResources] No faction found for merc lance, likely config error.");
                         return;
                     }
                     //ModState.HostileMercLanceTeamOverride = new Tuple<TeamOverride, string>(new TeamOverride(GlobalVars.HostileMercLanceTeamDefinitionGUID,

@@ -123,7 +123,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
         
         public static int GetMercFactionPoolFromWeight(SimGameState sim, string targetTeam, out string mercFactionFallbackTag)
         {
-            var factionValueInt = -1;
+            var factionValueInt = 0;
             var factionPool = new List<int>();
             foreach (var mercFaction in ModInit.modSettings.MercFactionConfigs)
 
@@ -195,7 +195,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
 
         public static int GetAlternateFactionPoolFromWeight(SimGameState sim, Classes.ConfigOptions.AlternateOpforConfig config, out string fallback)
         {
-            var factionValueInt = -1;
+            var factionValueInt = 0;
             var factionPoolFlattened = new List<Classes.FactionWeightAndFallback>();
             fallback = "";
             foreach (var altFaction in config.AlternateOpforWeights)

@@ -113,7 +113,8 @@ namespace SoldiersPiratesAssassinsMercs.Patches
     {
         public static void Postfix(Team __instance)
         {
-            if (MissionControl.MissionControl.Instance.Metrics.NumberOfTargetAdditionalLances < 1 && ModState.HostileMercLanceTeamOverride.TeamOverride != null)
+            if (MissionControl.MissionControl.Instance.Metrics.NumberOfTargetAdditionalLances < 1) return; 
+            if( ModState.HostileMercLanceTeamOverride.TeamOverride != null)
             {
                 if (ModState.RoundsInCombat <= 1 && __instance.IsLocalPlayer && __instance.Combat.TurnDirector.IsInterleaved)
                 {
@@ -233,7 +234,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         {
             if (creator == null) return;
             if (UnityGameInstance.BattleTechGame.Combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
-            if (MissionControl.MissionControl.Instance.Metrics.NumberOfTargetAdditionalLances < 1) ;
+            if (MissionControl.MissionControl.Instance.Metrics.NumberOfTargetAdditionalLances < 1) return;
             if (__instance.IsAvailable)
             {
                 if (target is AbstractActor targetActor)
