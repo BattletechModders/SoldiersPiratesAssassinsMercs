@@ -65,7 +65,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 string biome = Enum.GetName(typeof(Biome.BIOMESKIN), MissionControl.MissionControl.Instance.CurrentContract.ContractBiome);
                 biome = biome.Capitalise();
                 string contractType = MissionControl.MissionControl.Instance.CurrentContractType;
-                FactionDef faction = FactionDef.GetFactionDefByEnum(UnityGameInstance.BattleTechGame.DataManager, ModState.AltFactionFactionTeamOverride.TeamOverride.FactionValue.Name);
+                FactionDef faction = FactionDef.GetFactionDefByEnum(UnityGameInstance.BattleTechGame.DataManager, ModState.HostileAltLanceTeamOverride.TeamOverride.FactionValue.Name);
                 string factionName = (faction == null) ? "UNKNOWN" : faction.Name;
                 int factionRep = (MissionControl.MissionControl.Instance.IsSkirmish()) ? 0 : UnityGameInstance.Instance.Game.Simulation.GetRawReputation(faction?.FactionValue);
                 int mrbRating = (MissionControl.MissionControl.Instance.IsSkirmish()) ? 0 : UnityGameInstance.Instance.Game.Simulation.GetRawReputation(FactionEnumeration.GetMercenaryReviewBoardFactionValue());
