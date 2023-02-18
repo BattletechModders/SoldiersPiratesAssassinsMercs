@@ -416,7 +416,10 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 var totalValue = 0;
                 foreach (var unit in mercTeam.units)
                 {
+                    
                     totalValue += unit.PilotableActorDef.BattleValue;
+                    ModInit.modLog?.Info?.Write($"[CalculateBribeCostAndSuccess] Unit {unit.DisplayName} - {unit.PilotableActorDef.Description.Id} is worth {unit.PilotableActorDef.BattleValue}");
+
                 }
 
                 var baselineCost = totalValue * ModInit.modSettings.BribeCostBaselineMulti;
@@ -429,9 +432,9 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                     if (playerRep == 0) playerRep = 1;
                     baselineAcceptance *= (playerRep / mercRep);
                     
-                    ModInit.modLog?.Trace?.Write($"[CalculateBribeCostAndSuccess] Player MRB rep {playerRep} vs mercRep {mercRep}, baseline acceptance calcd as {baselineAcceptance}.");
+                    ModInit.modLog?.Info?.Write($"[CalculateBribeCostAndSuccess] Player MRB rep {playerRep} vs mercRep {mercRep}, baseline acceptance calcd as {baselineAcceptance}.");
                 }
-                ModInit.modLog?.Trace?.Write($"[CalculateBribeCostAndSuccess] Total Lance Cost: {totalValue}, bribe calculated  as {baselineCost} from multiplier {ModInit.modSettings.BribeCostBaselineMulti}.");
+                ModInit.modLog?.Info?.Write($"[CalculateBribeCostAndSuccess] Total Lance Cost: {totalValue}, bribe calculated  as {baselineCost} from multiplier {ModInit.modSettings.BribeCostBaselineMulti}.");
 
                 var moneyResults1 = Mathf.RoundToInt(baselineCost * .25f);
                 var moneyResults2 = Mathf.RoundToInt(baselineCost * .5f);

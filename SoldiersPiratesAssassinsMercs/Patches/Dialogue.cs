@@ -147,20 +147,21 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                         .PopupBackfill));
                 popup.AlwaysOnTop = true;
                 popup.AddButton("0%", (Action)(() => { }));
-                if (results[1].Item2 < companyFunds)
-                {
-                    popup.AddButton("25%.", (Action)(() =>
-                    {
-                        var roll = Utils.ProcessBribeRoll(results[1], mercTeam);
-
-                    }));
-                }
 
                 if (results[2].Item2 < companyFunds)
                 {
                     popup.AddButton("50%.", (Action)(() =>
                     {
                         var roll2 = Utils.ProcessBribeRoll(results[2], mercTeam);
+
+                    }));
+                }
+
+                if (results[1].Item2 < companyFunds)
+                {
+                    popup.AddButton("25%.", (Action)(() =>
+                    {
+                        var roll = Utils.ProcessBribeRoll(results[1], mercTeam);
 
                     }));
                 }
