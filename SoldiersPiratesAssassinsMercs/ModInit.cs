@@ -45,10 +45,12 @@ namespace SoldiersPiratesAssassinsMercs
             //dump settings
             ModInit.modLog?.Info?.Write($"Settings dump: {settings}");
             ModState.InitializeDialogueStrings();
+            if (modSettings.dumpSubFactions) ModState.GenerateFactionMap();
         }
     }
     public class Settings
     {
+        public bool dumpSubFactions = false;
         public bool enableDebug = false;
         public bool enableTrace = false;
         public List<string> BlacklistedContractTypesAndIDs = new List<string>();
@@ -71,5 +73,7 @@ namespace SoldiersPiratesAssassinsMercs
         public float BribeCostBaselineMulti = 0.01f; //default to 1% of total opfor lance value (uses "BV" calculation)
         // deprecated, but left in for disabled code
         public string BribeAbility = "AbilityDefAttemptBribe";
+
+        public List<string> BattleRoyaleContracts = new List<string>();
     }
 }

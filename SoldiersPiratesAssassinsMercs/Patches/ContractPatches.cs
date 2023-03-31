@@ -14,6 +14,171 @@ using ModState = SoldiersPiratesAssassinsMercs.Framework.ModState;
 
 namespace SoldiersPiratesAssassinsMercs.Patches
 {
+    public class BattleRoyalePatches
+    {
+        //todo - randomize heraldry for all hostile units?
+        //make phase icon HostileToAll for everyone
+        //probably actualy contracts should only allow 1 player unit.
+
+        //below makes interleaved. AI still not firing -_-
+        [HarmonyPatch(typeof(SharedVisibilityCache), "RebuildCache")]
+        public static class SharedVisibilityCache_RebuildCache
+        {
+            static bool Prepare() => ModInit.modSettings.BattleRoyaleContracts.Count > 0;
+            public static bool Prefix(SharedVisibilityCache __instance, List<ICombatant> allLivingCombatants)
+            {
+                if (!ModInit.modSettings.BattleRoyaleContracts.Contains(__instance.Combat.ActiveContract.Override.ID)) return true;
+
+                VisibilityLevel visibilityLevel = VisibilityLevel.None;
+                for (int i = 0; i < allLivingCombatants.Count; i++)
+                {
+                    ICombatant combatant = allLivingCombatants[i];
+                    if (combatant.team == null || !__instance.HostilityMatrix.IsFriendly(__instance.TeamGuid, combatant.team.GUID))
+                    {
+                        VisibilityLevelAndAttribution sharedValue = __instance.getSharedValue(combatant);
+                        VisibilityLevel visibilityLevel2 = sharedValue.VisibilityLevel;
+                        AbstractActor abstractActor = combatant as AbstractActor;
+                        if (visibilityLevel2 >= VisibilityLevel.LOSFull || (abstractActor != null && visibilityLevel2 > VisibilityLevel.None))
+                        {
+                            if (visibilityLevel2 > visibilityLevel)
+                            {
+                                visibilityLevel = visibilityLevel2;
+                            }
+                            if (abstractActor != null)
+                            {
+                                if (!__instance.previouslyDetectedEnemyUnits.Contains(abstractActor))
+                                {
+                                    __instance.previouslyDetectedEnemyUnits.Add(abstractActor);
+                                }
+                                __instance.previouslyDetectedEnemyLocations[abstractActor] = abstractActor.CurrentPosition;
+                            }
+                        }
+                    }
+                }
+                __instance.CheckForContact(visibilityLevel);
+                return false;
+            }
+        }
+
+
+
+
+        [HarmonyPatch(typeof(LanceDetectsEnemiesNode), "Tick")]
+        public static class LanceDetectsEnemiesNode_Tick
+        {
+            static bool Prepare() => ModInit.modSettings.BattleRoyaleContracts.Count > 0;
+            public static bool Prefix(LanceDetectsEnemiesNode __instance, ref BehaviorTreeResults __result)
+            {
+                if (!ModInit.modSettings.BattleRoyaleContracts.Contains(__instance.unit.Combat.ActiveContract.Override.ID)) return true;
+
+                List<Team> teams = __instance.tree.battleTechGame.Combat.Teams;
+                Team team = teams.Find((Team x) => x.GUID == __instance.unit.TeamId);
+                foreach (AbstractActor abstractActor in team.units)
+                {
+                    List<string> magicallyVisibleUnitGUIDs = __instance.unit.GetMagicallyVisibleUnitGUIDs();
+                    foreach (Team team2 in teams)
+                    {
+                        foreach (AbstractActor abstractActor2 in team2.units)
+                        {
+                            if (magicallyVisibleUnitGUIDs.Contains(abstractActor2.GUID) || abstractActor.HasDetectionToTargetUnit(abstractActor2))
+                            {
+                                __result = new BehaviorTreeResults(BehaviorNodeState.Success)
+                                {
+                                    debugOrderString = __instance.name
+                                };
+                                return false;
+                            }
+                        }
+                    }
+                }
+                __result = new BehaviorTreeResults(BehaviorNodeState.Failure);
+                return false;
+            }
+        }
+        
+        [HarmonyPatch(typeof(HostilityMatrix), "GetHostility", new Type[] {typeof(string), typeof(string)})]
+        public static class HostilityMatrix_GetHostility
+        {
+            static bool Prepare() => ModInit.modSettings.BattleRoyaleContracts.Count > 0;
+            public static void Postfix(HostilityMatrix __instance, string teamGuidOne, string teamGuidTwo,
+                ref Hostility __result)
+            {
+                var combat = UnityGameInstance.BattleTechGame.Combat;
+                if (combat == null) return;
+                if (!ModInit.modSettings.BattleRoyaleContracts.Contains(combat.ActiveContract.Override.ID)) return;
+                __result = Hostility.ENEMY;
+            }
+        }
+
+        [HarmonyPatch(typeof(UnitSpawnPointGameLogic), "ApplyContractOverride")]
+        public static class UnitSpawnPointGameLogic_ApplyContractOverride
+        {
+            static bool Prepare() => ModInit.modSettings.BattleRoyaleContracts.Count > 0;
+            public static void Prefix(UnitSpawnPointGameLogic __instance, UnitSpawnPointOverride unitOverride,
+                Dictionary<string, EncounterObjectGameLogic> encounterObjectDictionary, string lanceName, int index, bool fromEditorApplyButton)
+            {
+                if (__instance.Combat == null)
+                {
+                    ModInit.modLog?.Info?.Write(
+                        $"combat null at this point, will need to build loc later in the. thingy.");
+                    return;
+                }
+
+                if (__instance.Combat.ActiveContract == null)
+                {
+                    ModInit.modLog?.Info?.Write(
+                        $"active contract null at this point, will need to build loc later in the. thingy.");
+                    return;
+                }
+
+                if (__instance.Combat.ActiveContract.Override.ID == null)
+                {
+                    ModInit.modLog?.Info?.Write(
+                        $"active contract override ID null at this point, will need to build loc later in the. thingy.");
+                    return;
+                }
+                if (__instance.unitType == UnitType.Turret) return;
+                if (!ModInit.modSettings.BattleRoyaleContracts.Contains(__instance.Combat.ActiveContract.Override.ID))
+                    return;
+
+                __instance.UpdateHexPosition();
+                var vector = __instance.hexPosition;
+                vector.y = __instance.Combat.MapMetaData.GetLerpedHeightAt(vector, false);
+                ModInit.modLog?.Info?.Write($"adding vector3 {vector} to list thinger.");
+                ModState.UnitSpawnPointLocs.Add(vector);
+            }
+        }
+
+        [HarmonyPatch(typeof(UnitSpawnPointGameLogic), "GetSpawnPosition")]
+        public static class UnitSpawnPointGameLogic_GetSpawnPosition
+        {
+            static bool Prepare() => ModInit.modSettings.BattleRoyaleContracts.Count > 0;
+            public static void Postfix(UnitSpawnPointGameLogic __instance, ref Vector3 __result)
+            {
+                if (__instance.Combat == null) return;
+                if (__instance.unitType == UnitType.Turret) return;
+                if (!ModInit.modSettings.BattleRoyaleContracts.Contains(__instance.Combat.ActiveContract.Override.ID))
+                    return;
+                ModInit.modLog?.Info?.Write($"trying to pull loc from list thinger.");
+                if (ModState.UnitSpawnPointLocs.Count == 0)
+                {
+                    ModInit.modLog?.Info?.Write($"no locs in list thinger.");
+                    return;
+                }
+                var idx = ModState.UnitSpawnPointLocs.GetRandomIndex();
+                var selectedSpawnPos = ModState.UnitSpawnPointLocs[idx];
+                var newSpawnPos = new Vector3(selectedSpawnPos.x, selectedSpawnPos.y, selectedSpawnPos.z);
+                ModState.UnitSpawnPointLocs.RemoveAt(idx);
+
+                __instance.Position = newSpawnPos;
+                __instance.currentPosition = newSpawnPos;
+                __instance.hexPosition = newSpawnPos;
+                __result = newSpawnPos; // need actually assign on first try?
+            }
+        }
+    }
+
+
     public class ContractPatches
     {
         [HarmonyPatch(typeof(HostilityMatrix), MethodType.Constructor, new Type[]{typeof(CombatGameState), typeof(EncounterPlayStyle)})]

@@ -5,10 +5,11 @@ using System.IO;
 using BattleTech;
 using BattleTech.Framework;
 using Newtonsoft.Json;
+using UnityEngine;
 using static SoldiersPiratesAssassinsMercs.Framework.Classes;
 
 namespace SoldiersPiratesAssassinsMercs.Framework
-{
+{ 
     public class ModState
     {
         //these stay through play session
@@ -40,11 +41,70 @@ namespace SoldiersPiratesAssassinsMercs.Framework
 
         public static int BribeSuccess = 0;
         //public static bool QueueBribePopup = false;
+        public static List<Vector3> UnitSpawnPointLocs = new List<Vector3>();
 
-       public static void InitializeMercFactionList(SimGameState sim)
-       {
-            if (simMercFactions.Count != 0) return;
-            ModState.simDisplayedFactions = new List<string>(sim.displayedFactions);
+        public static void GenerateFactionMap()
+        {
+            var outputDictionary = new Dictionary<string, List<string>>();
+            foreach (var altConfig in ModInit.modSettings.AlternateFactionConfigs)
+            {
+                if (!outputDictionary.ContainsKey(altConfig.Key))
+                {
+                    outputDictionary.Add(altConfig.Key, new List<string>());
+                }
+                foreach (var altFaction in altConfig.Value.AlternateOpforWeights)
+                {
+                    if (!outputDictionary[altConfig.Key].Contains(altFaction.FactionName))
+                    {
+                        outputDictionary[altConfig.Key].Add(altFaction.FactionName);
+                    }
+                }
+            }
+
+            foreach (var mercConfig in ModInit.modSettings.MercFactionConfigs)
+            {
+                if (!outputDictionary.ContainsKey(mercConfig.Value.MercFactionFallbackTag))
+                {
+                    outputDictionary.Add(mercConfig.Value.MercFactionFallbackTag, new List<string>());
+                }
+
+                if (!outputDictionary[mercConfig.Value.MercFactionFallbackTag].Contains(mercConfig.Key))
+                {
+                    outputDictionary[mercConfig.Value.MercFactionFallbackTag].Add(mercConfig.Key);
+                }
+            }
+
+            foreach (var planetConfig in ModInit.modSettings.PlanetFactionConfigs)
+            {
+                foreach (var factionConfig in planetConfig.Value.AlternateOpforWeights)
+                {
+                    if (!outputDictionary.ContainsKey(factionConfig.FactionFallback))
+                    {
+                        outputDictionary.Add(factionConfig.FactionFallback, new List<string>());
+                    }
+
+                    if (!outputDictionary[factionConfig.FactionFallback].Contains(factionConfig.FactionName))
+                    {
+                        outputDictionary[factionConfig.FactionFallback].Add(factionConfig.FactionName);
+                    }
+                }
+            }
+
+
+
+            string path = Path.Combine(ModInit.modDir, "subFaction.json");
+
+            using (StreamWriter writer = new StreamWriter(path, false))
+            {
+                writer.Write(JsonConvert.SerializeObject(outputDictionary, Formatting.Indented));
+                writer.Flush();
+            }
+        }
+
+        public static void InitializeMercFactionList(SimGameState sim) 
+        { 
+            if (simMercFactions.Count != 0) return; 
+            ModState.simDisplayedFactions = new List<string>(sim.displayedFactions); 
             foreach (var faction in FactionEnumeration.FactionList)
             {
                 if (!faction.IsRealFaction ||
@@ -54,60 +114,60 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                     ModState.simMercFactions.Add(faction.Name);
                 }
             }
-       }
-
-       public static void InitializeDialogueStrings()
-       {
-           using (StreamReader reader = new StreamReader($"{ModInit.modDir}/MercDialogue.json"))
-           {
-               string jdata = reader.ReadToEnd(); //dictionary key is "personality attribute" associated with Dialogue.
-               ModState.MercDialogueStrings = JsonConvert.DeserializeObject<ConcurrentDictionary<string, List<Classes.MercDialogueBucket>>>(jdata);
-               ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initializing Merc Dialogue");
-           }
-           foreach (var stringconfig in ModState.MercDialogueStrings)
-           {
-               ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initialized Merc Dialogue for attribute {stringconfig.Key}");
-               foreach (var config in stringconfig.Value)
-               {
-                   ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initialized Merc Dialogue {string.Join("; ", config.Dialogue)}");
+        } 
+        public static void InitializeDialogueStrings() 
+        {
+            using (StreamReader reader = new StreamReader($"{ModInit.modDir}/MercDialogue.json"))
+            {
+                string jdata = reader.ReadToEnd(); //dictionary key is "personality attribute" associated with Dialogue.
+                ModState.MercDialogueStrings = JsonConvert.DeserializeObject<ConcurrentDictionary<string, List<Classes.MercDialogueBucket>>>(jdata);
+                ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initializing Merc Dialogue");
+            }
+            foreach (var stringconfig in ModState.MercDialogueStrings)
+            {
+                ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initialized Merc Dialogue for attribute {stringconfig.Key}");
+                foreach (var config in stringconfig.Value)
+                {
+                    ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initialized Merc Dialogue {string.Join("; ", config.Dialogue)}");
                 }
-           }
+            }
 
-           using (StreamReader reader = new StreamReader($"{ModInit.modDir}/GenericDialogue.json"))
-           {
-               string jdata = reader.ReadToEnd(); //dictionary key is alternate faction (match key from AlternateFactionConfigs keys) associated with Dialogue.
+            using (StreamReader reader = new StreamReader($"{ModInit.modDir}/GenericDialogue.json"))
+            {
+                string jdata = reader.ReadToEnd(); //dictionary key is alternate faction (match key from AlternateFactionConfigs keys) associated with Dialogue.
                 ModState.GenericDialogueStrings = JsonConvert.DeserializeObject<ConcurrentDictionary<string, List<string>>>(jdata);
-               ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initializing other faction Dialogue");
-           }
-           foreach (var stringconfig in ModState.GenericDialogueStrings)
-           {
-               ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initialized other Dialogue for attribute {stringconfig.Key}");
-               foreach (var config in stringconfig.Value)
-               {
-                   ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initialized other Dialogue {string.Join("; ", config)}");
-               }
-           }
-       }
+                ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initializing other faction Dialogue");
+            }
+            foreach (var stringconfig in ModState.GenericDialogueStrings)
+            {
+                ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initialized other Dialogue for attribute {stringconfig.Key}");
+                foreach (var config in stringconfig.Value)
+                {
+                    ModInit.modLog?.Trace?.Write($"[InitializeDialogueStrings] Initialized other Dialogue {string.Join("; ", config)}");
+                }
+            }
+        }
 
-       public static void ResetStateAfterContract()
-       { 
-           HostileMercLanceTeamDefinition = new TeamDefinition(GlobalVars.HostileMercLanceTeamDefinitionGUID, "HostileMercenaryTeam"); 
-           FriendlyMercLanceTeamDefinition = new TeamDefinition(GlobalVars.FriendlyMercLanceTeamDefinitionGUID, "FriendlyMercenaryTeam"); 
-           HostileToAllLanceTeamDefinition = new TeamDefinition(GlobalVars.HostileToAllLanceTeamDefinitionGUID, "HostilePlanetTeam");
-           MercFactionTeamOverride = new SPAMTeamOverride();
-           AltFactionFactionTeamOverride = new SPAMTeamOverride();
-           PlanetAltFactionTeamOverride = new SPAMTeamOverride();
-           OriginalTargetFactionTeamOverride = null;
-           //ActiveContractShouldReplaceLanceWithMercs = false;
-           HostileMercLanceTeamOverride = new SPAMTeamOverride();
-           HostileToAllLanceTeamOverride = new SPAMTeamOverride();
-           HostileAltLanceTeamOverride = new SPAMTeamOverride();
-           ActiveContractShouldSpawnAlliedMercs = false;
-           ChosenDialogue = new Classes.MercDialogueBucket();
-           RoundsInCombat = 0;
-           HasBribeBeenAttempted = false;
-           BribeSuccess = 0;
-           //QueueBribePopup = false;
-       }
+        public static void ResetStateAfterContract()
+        { 
+            HostileMercLanceTeamDefinition = new TeamDefinition(GlobalVars.HostileMercLanceTeamDefinitionGUID, "HostileMercenaryTeam"); 
+            FriendlyMercLanceTeamDefinition = new TeamDefinition(GlobalVars.FriendlyMercLanceTeamDefinitionGUID, "FriendlyMercenaryTeam"); 
+            HostileToAllLanceTeamDefinition = new TeamDefinition(GlobalVars.HostileToAllLanceTeamDefinitionGUID, "HostilePlanetTeam");
+            MercFactionTeamOverride = new SPAMTeamOverride();
+            AltFactionFactionTeamOverride = new SPAMTeamOverride();
+            PlanetAltFactionTeamOverride = new SPAMTeamOverride();
+            OriginalTargetFactionTeamOverride = null;
+            //ActiveContractShouldReplaceLanceWithMercs = false;
+            HostileMercLanceTeamOverride = new SPAMTeamOverride();
+            HostileToAllLanceTeamOverride = new SPAMTeamOverride();
+            HostileAltLanceTeamOverride = new SPAMTeamOverride();
+            ActiveContractShouldSpawnAlliedMercs = false;
+            ChosenDialogue = new Classes.MercDialogueBucket();
+            RoundsInCombat = 0;
+            HasBribeBeenAttempted = false;
+            BribeSuccess = 0;
+            UnitSpawnPointLocs = new List<Vector3>();
+            //QueueBribePopup = false;
+        }
     }
 }

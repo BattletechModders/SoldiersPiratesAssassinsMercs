@@ -9,6 +9,7 @@ Any factions to be used as replacers/alternates _must_ be actual factions. They 
 mod.json settings:
 ```
 	"Settings": {
+		"dumpSubFactions": true,
 		"enableDebug": true,
 		"enableTrace": true,
 		"BlacklistedContractTypesAndIDs": [],
@@ -71,9 +72,15 @@ mod.json settings:
 			}
 		},
 		"FallbackUnitFactionTag": "mercenaries",
-		"BribeCostBaselineMulti": 0.01
+		"BribeCostBaselineMulti": 0.01,
 	}
 ```
+
+`dumpSubFactions` - bool, if true will dump a map of subfactions to "main" factions to json in the mod folder. this can then be pasted into PracticeMakesPerfect mod setting so SPAM factions will count toward appropriate specializations. SPAM factions are mapped as follows:
+
+AltFactions -> to main faction
+MercFactions -> to fallback tag faction
+PlanetFactions -> to fallback tag faction
 
 `enableDebug` and `enableTrace` - bools, enable debug and trace logging, respectively. recommend leaving debug log disabled and trace enabled (at least for initial config)
 
