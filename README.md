@@ -2,6 +2,8 @@
 
 **Depends On MissionControl and IRBTModUtils!** 
 
+**Versions 1.2.0.0 and higher requires modtek v3 or higher**
+
 This mod breathes a little life into the mercenaries of the Inner Sphere, allowing mercenary factions to jump in and replace the opfor at contract start. Depending on the configuration, the hostile mercs may replace the opfor entirely, or they may only replace AdditionalLances added by MissionControl. The lance difficulty *should* be approximately the same, as the mod works by simply changing the faction for the replaced units and re-selecting appropriate lances and units. In addition, merc dialogue will be generated at contract start, and the capability to bribe/pay off the hostile mercs (only for MC AdditionalLances. No paying your way out of entire contracts) has also been implemented. Settings for this mod reside in two places; basic mod settings are in the mod.json, while Dialogue.json contains settings and configuration for dialogue (more on that later).
 
 Any factions to be used as replacers/alternates _must_ be actual factions. They must have a FactionDef, and they must appear in the Faction.json FactionEnumeration with IsRealFaction set True. Unique HeraldryDef and CastDefs are optional (but must at least be reused from another valid faction like locals or whatever). They do *not* have to be set to gain reputation, do not need to appear as procedural contract targets or employers, nor do they need to be IsCareerStartingDisplayFaction and display in the Cpt Quarters reputation screen. Basic one-off factions like EdCorbu or ProfHorvat are good minimal templates to use.

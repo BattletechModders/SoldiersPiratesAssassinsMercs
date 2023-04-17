@@ -3,7 +3,6 @@ using System.Linq;
 using BattleTech;
 using BattleTech.Data;
 using BattleTech.Framework;
-using Harmony;
 using HBS.Collections;
 
 namespace SoldiersPiratesAssassinsMercs.Patches

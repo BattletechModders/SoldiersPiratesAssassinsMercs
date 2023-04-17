@@ -8,7 +8,6 @@ using BattleTech.Designed;
 using BattleTech.Framework;
 using BattleTech.StringInterpolation;
 using FogOfWar;
-using Harmony;
 using HBS;
 using HBS.Collections;
 using MissionControl.Logic;

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using BattleTech.Framework;
-using Harmony;
 using MissionControl.Data;
 using MissionControl.Logic;
 using MissionControl.Rules;
@@ -15,8 +14,9 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         [HarmonyPatch(typeof(AddTargetLanceWithDestroyObjectiveBatch), MethodType.Constructor, new Type[] { typeof(EncounterRules), typeof(string), typeof(SceneManipulationLogic.LookDirection), typeof(float), typeof(float), typeof(string), typeof(int), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(List<string>), typeof(MLanceOverride) })]
         public static class AddTargetLanceWithDestroyObjectiveBatch_Constructor
         {
-            public static bool Prefix(AddTargetLanceWithDestroyObjectiveBatch __instance, EncounterRules encounterRules, string orientationTargetKey, SceneManipulationLogic.LookDirection lookDirection, float mustBeBeyondDistance, float mustBeWithinDistance, string objectiveName, int priority, bool isPrimaryObjective, bool displayToUser, bool showObjectiveOnLanceDetected, bool excludeFromAutocomplete, List<string> lanceTags, MLanceOverride manuallySpecifiedLance = null)
+            public static void Prefix(ref bool __runOriginal, AddTargetLanceWithDestroyObjectiveBatch __instance, EncounterRules encounterRules, string orientationTargetKey, SceneManipulationLogic.LookDirection lookDirection, float mustBeBeyondDistance, float mustBeWithinDistance, string objectiveName, int priority, bool isPrimaryObjective, bool displayToUser, bool showObjectiveOnLanceDetected, bool excludeFromAutocomplete, List<string> lanceTags, MLanceOverride manuallySpecifiedLance = null)
             {
+                if (__runOriginal) return;
                 if (ModState.HostileToAllLanceTeamOverride.TeamOverride != null)
                 {
                     var objectiveName2 = $"Destroy {ModState.HostileToAllLanceTeamOverride.TeamOverride.FactionDef.Demonym} Lance";
@@ -49,7 +49,8 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     }
 
                     encounterRules.ObjectReferenceQueue.Add(spawnerName);
-                    return false;
+                    __runOriginal = false;
+                    return;
                 }
                 else if (ModState.HostileAltLanceTeamOverride.TeamOverride != null)
                 {
@@ -83,7 +84,8 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     }
 
                     encounterRules.ObjectReferenceQueue.Add(spawnerName);
-                    return false;
+                    __runOriginal = false;
+                    return;
                 }
 
                 else if (ModState.HostileMercLanceTeamOverride.TeamOverride != null)
@@ -117,10 +119,12 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     }
 
                     encounterRules.ObjectReferenceQueue.Add(spawnerName);
-                    return false;
+                    __runOriginal = false;
+                    return;
                 }
 
-                return true;
+                __runOriginal = true;
+                return;
             }
         }
 

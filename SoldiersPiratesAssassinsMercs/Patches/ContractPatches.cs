@@ -5,7 +5,6 @@ using BattleTech;
 using BattleTech.Data;
 using BattleTech.Framework;
 using BattleTech.UI;
-using Harmony;
 using HBS.Collections;
 using SoldiersPiratesAssassinsMercs.Framework;
 using UnityEngine;
@@ -25,9 +24,14 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         public static class SharedVisibilityCache_RebuildCache
         {
             static bool Prepare() => ModInit.modSettings.BattleRoyaleContracts.Count > 0;
-            public static bool Prefix(SharedVisibilityCache __instance, List<ICombatant> allLivingCombatants)
+            public static void Prefix(ref bool __runOriginal, SharedVisibilityCache __instance, List<ICombatant> allLivingCombatants)
             {
-                if (!ModInit.modSettings.BattleRoyaleContracts.Contains(__instance.Combat.ActiveContract.Override.ID)) return true;
+                if (!__runOriginal) return;
+                if (!ModInit.modSettings.BattleRoyaleContracts.Contains(__instance.Combat.ActiveContract.Override.ID))
+                {
+                    __runOriginal = true;
+                    return;
+                }
 
                 VisibilityLevel visibilityLevel = VisibilityLevel.None;
                 for (int i = 0; i < allLivingCombatants.Count; i++)
@@ -56,20 +60,24 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                     }
                 }
                 __instance.CheckForContact(visibilityLevel);
-                return false;
+                __runOriginal = false;
+                return;
             }
         }
-
-
-
 
         [HarmonyPatch(typeof(LanceDetectsEnemiesNode), "Tick")]
         public static class LanceDetectsEnemiesNode_Tick
         {
             static bool Prepare() => ModInit.modSettings.BattleRoyaleContracts.Count > 0;
-            public static bool Prefix(LanceDetectsEnemiesNode __instance, ref BehaviorTreeResults __result)
+            public static void Prefix(ref bool __runOriginal, LanceDetectsEnemiesNode __instance, ref BehaviorTreeResults __result)
             {
-                if (!ModInit.modSettings.BattleRoyaleContracts.Contains(__instance.unit.Combat.ActiveContract.Override.ID)) return true;
+                if (!__runOriginal) return;
+                if (!ModInit.modSettings.BattleRoyaleContracts.Contains(__instance.unit.Combat.ActiveContract.Override
+                        .ID))
+                {
+                    __runOriginal = true;
+                    return;
+                }
 
                 List<Team> teams = __instance.tree.battleTechGame.Combat.Teams;
                 Team team = teams.Find((Team x) => x.GUID == __instance.unit.TeamId);
@@ -86,13 +94,15 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                                 {
                                     debugOrderString = __instance.name
                                 };
-                                return false;
+                                __runOriginal = false;
+                                return;
                             }
                         }
                     }
                 }
                 __result = new BehaviorTreeResults(BehaviorNodeState.Failure);
-                return false;
+                __runOriginal = false;
+                return;
             }
         }
         

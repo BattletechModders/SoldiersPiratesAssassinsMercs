@@ -1,6 +1,5 @@
 ﻿using BattleTech;
 using BattleTech.Designed;
-using Harmony;
 using MissionControl.Logic;
 using SoldiersPiratesAssassinsMercs.Framework;
 

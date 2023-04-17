@@ -4,7 +4,6 @@ using BattleTech;
 using BattleTech.Designed;
 using BattleTech.Framework;
 using BattleTech.UI;
-using Harmony;
 using HBS;
 using SoldiersPiratesAssassinsMercs.Framework;
 using UnityEngine;

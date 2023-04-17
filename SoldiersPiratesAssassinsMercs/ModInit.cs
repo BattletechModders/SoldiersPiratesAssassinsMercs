@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Harmony;
 using IRBTModUtils.Logging;
 using Newtonsoft.Json;
 using SoldiersPiratesAssassinsMercs.Framework;
@@ -40,8 +39,9 @@ namespace SoldiersPiratesAssassinsMercs
             }
 
             ModInit.modLog?.Info?.Write($"Initializing SPAM - Version {typeof(Settings).Assembly.GetName().Version}");
-            var harmony = HarmonyInstance.Create(HarmonyPackage);
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            //var harmony = HarmonyInstance.Create(HarmonyPackage);
+            //harmony.PatchAll(Assembly.GetExecutingAssembly());
+            Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), HarmonyPackage);
             //dump settings
             ModInit.modLog?.Info?.Write($"Settings dump: {settings}");
             ModState.InitializeDialogueStrings();
