@@ -46,6 +46,7 @@ namespace SoldiersPiratesAssassinsMercs
             ModInit.modLog?.Info?.Write($"Settings dump: {settings}");
             ModState.InitializeDialogueStrings();
             if (modSettings.dumpSubFactions) ModState.GenerateFactionMap();
+            ModState.BuildFallbackMap();
         }
     }
     public class Settings

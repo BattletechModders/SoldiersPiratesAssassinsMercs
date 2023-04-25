@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using BattleTech;
 using BattleTech.Framework;
 using Newtonsoft.Json;
@@ -13,6 +14,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
     public class ModState
     {
         //these stay through play session
+        public static Dictionary<string, List<string>> UniversalFactionFallbackMap = new Dictionary<string, List<string>>();
         public static List<string> simDisplayedFactions = new List<string>();
         public static List<string> simMercFactions = new List<string>();
         public static ConcurrentDictionary<string, List<Classes.MercDialogueBucket>> MercDialogueStrings = new ConcurrentDictionary<string, List<Classes.MercDialogueBucket>>();
@@ -43,6 +45,52 @@ namespace SoldiersPiratesAssassinsMercs.Framework
         //public static bool QueueBribePopup = false;
         public static List<Vector3> UnitSpawnPointLocs = new List<Vector3>();
 
+        public static void BuildFallbackMap()
+        {
+            var outputDictionary = new Dictionary<string, List<string>>();
+            foreach (var altConfig in ModInit.modSettings.AlternateFactionConfigs)
+            {
+                foreach (var altFactions in altConfig.Value.AlternateOpforWeights)
+                {
+                    if (!outputDictionary.ContainsKey(altFactions.FactionName.ToLower()))
+                    {
+                        outputDictionary.Add(altFactions.FactionName.ToLower(), new List<string>{altFactions.FactionFallback.ToLower() });
+                    }
+                    else if (!outputDictionary[altFactions.FactionName.ToLower()].Contains(altFactions.FactionFallback.ToLower()))
+                    {
+                        outputDictionary[altFactions.FactionName.ToLower()].Add(altFactions.FactionFallback.ToLower());
+                    }
+                }
+            }
+            foreach (var mercConfig in ModInit.modSettings.MercFactionConfigs)
+            {
+                if (!outputDictionary.ContainsKey(mercConfig.Key.ToLower()))
+                {
+                    outputDictionary.Add(mercConfig.Key.ToLower(), new List<string>{ mercConfig.Value.MercFactionFallbackTag.ToLower() });
+                }
+                else if (!outputDictionary[mercConfig.Key.ToLower()].Contains(mercConfig.Value.MercFactionFallbackTag.ToLower()))
+                {
+                    outputDictionary[mercConfig.Key.ToLower()].Add(mercConfig.Value.MercFactionFallbackTag.ToLower());
+                }
+            }
+
+            foreach (var planetConfig in ModInit.modSettings.PlanetFactionConfigs)
+            {
+                foreach (var planetFactions in planetConfig.Value.AlternateOpforWeights)
+                {
+                    if (!outputDictionary.ContainsKey(planetFactions.FactionName.ToLower()))
+                    {
+                        outputDictionary.Add(planetFactions.FactionName.ToLower(), new List<string>{ planetFactions.FactionFallback.ToLower() });
+                    }
+                    else if (!outputDictionary[planetFactions.FactionName.ToLower()].Contains(planetFactions.FactionFallback.ToLower()))
+                    {
+                        outputDictionary[planetFactions.FactionName.ToLower()].Add(planetFactions.FactionFallback.ToLower());
+                    }
+                }
+            }
+            ModState.UniversalFactionFallbackMap = outputDictionary;
+            ModInit.modLog?.Info?.Write($"Built Universal Fallback Map: {JsonConvert.SerializeObject(outputDictionary, Formatting.Indented)}");
+        }
         public static void GenerateFactionMap()
         {
             var outputDictionary = new Dictionary<string, List<string>>();
@@ -89,8 +137,6 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                     }
                 }
             }
-
-
 
             string path = Path.Combine(ModInit.modDir, "subFaction.json");
 

@@ -206,7 +206,6 @@ example GenericDialogue.json
 So how does it all work together? We'll use the above settings as a guide. 
 
 ### Are we going to replace something with mercs?
-
 Well we're at least gonna try. `BaseReplaceChance` in OpforReplacementConfig is 0, so mercs will never replace the entire opfor, but `BaseReplaceChance` in `MercLanceAdditionConfig` is 1.0, so mercs will always replace MC AdditionalLances *unless* you're facing Locals, in which case they would not be replaced due to `FactionsReplaceOverrides`. ~~We don't have any contracts or contract types blacklisted, so onwards.~~
 
 ### What mercs are we replacing them with?
@@ -234,7 +233,6 @@ The bribed merc units should despawn without appearing as salvage.
 Are you saying these mercenaries just *took* your money and didn't leave? Unbelievable. Guess you'll have to destroy them, huh.
 
 ### Can multiple replacements happen at once?
-
 Short answer is no. The long answer is also no, just with extra steps. The order all of these replacements are checked is as follows, and the first "yes" stops all subsequent checks. As previously stated, **the only time you can attempt to bribe is if MissionControl lances have been replaced with mercs from MercLanceAdditionConfig**
 
 1. Are we replacing entire opfor with planet-specific one from PlanetFactionConfigs?
@@ -243,3 +241,6 @@ Short answer is no. The long answer is also no, just with extra steps. The order
 4. Are we replacing MissionControl AdditionalLances with planet-specific one from PlanetFactionConfigs?
 5. Are we replacing MissionControl AdditionalLances with alternate faction from AlternateFactionConfigs?
 6. Are we replacing MissionControl AdditionalLances with mercs from MercLanceAdditionConfig?
+
+### A note on fallbacks!
+As of v1.2.0.1, all of the various fallback configurations for factions used as any of Merc factions, Faction Alts, or Planet Alts will also be used as potential fallbacks if any of these factions are called for as a normal contract target or ally. This would mostly come into play if one of these factions participates in a WarTech IIC raid or flareup, or if specifically called for by an event as opposed to being organically selected like normal.

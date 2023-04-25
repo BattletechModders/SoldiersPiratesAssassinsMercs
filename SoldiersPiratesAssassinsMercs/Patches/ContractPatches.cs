@@ -1027,6 +1027,53 @@ namespace SoldiersPiratesAssassinsMercs.Patches
                         ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [AdditionalLance Override] Proceeding using original requiredTags.");
                     }
                 }
+                else
+                {
+                    var foundInMap = false;
+                    var factionTag = "";
+                    foreach (var tag in requiredTags)
+                    {
+                        if (!ModState.UniversalFactionFallbackMap.ContainsKey(tag) ||
+                            ModState.UniversalFactionFallbackMap[tag].Count <= 0) continue;
+                        factionTag = tag;
+                        foundInMap = true;
+                        break;
+                    }
+
+                    if (!foundInMap)
+                    {
+                        ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [UniversalFactionFallbackMap] Couldn't find faction tag: {factionTag} in fallback map, should be a regular faction and we're not needed.");
+                        return;
+                    }
+                    ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [UniversalFactionFallbackMap] Found faction tag: {factionTag} in requiredTags. Checking if we need to use universal fallbacks");
+                    var resultDefs = Utils.GetMatchingUnitDefsOriginal(mdd, requiredTags, excludedTags, checkOwnership,
+                        currentDate, companyTags);
+                    if (resultDefs.Count == 0)
+                    {
+                        var fallbacks = new List<string>(ModState.UniversalFactionFallbackMap[factionTag]);
+
+                        for (var index = fallbacks.Count - 1; index >= 0; index--)
+                        {
+                            var fallback = fallbacks[index];
+                            requiredTags.Remove(factionTag);
+                            requiredTags.Add(fallback);
+                            ModInit.modLog?.Info?.Write(
+                                $"[TagSetQueryExtensions_GetMatchingUnitDefs] [UniversalFactionFallbackMap] Original result failed, removing faction tag: {factionTag}" +
+                                $"and replacing with faction fallback tag: {fallback}");
+                            factionTag = fallback;
+                            var fallBackDefs = Utils.GetMatchingUnitDefsOriginal(mdd, requiredTags, excludedTags,
+                                checkOwnership,
+                                currentDate, companyTags);
+                            if (fallBackDefs.Count != 0) return;
+                        }
+
+                        requiredTags.Remove(factionTag);
+                        requiredTags.Add(ModInit.modSettings.FallbackUnitFactionTag.ToLower());
+                        ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [UniversalFactionFallbackMap] Faction fallback result failed, removing faction tag: {factionTag} and replacing with generic fallback tag from settings: {ModInit.modSettings.FallbackUnitFactionTag.ToLower()}");
+                        return;
+                    }
+                    ModInit.modLog?.Info?.Write($"[TagSetQueryExtensions_GetMatchingUnitDefs] [UniversalFactionFallbackMap] Proceeding using original requiredTags for {factionTag}.");
+                }
             }
         }
 
