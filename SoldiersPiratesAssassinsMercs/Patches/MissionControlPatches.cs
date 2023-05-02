@@ -16,7 +16,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         {
             public static void Prefix(ref bool __runOriginal, AddTargetLanceWithDestroyObjectiveBatch __instance, EncounterRules encounterRules, string orientationTargetKey, SceneManipulationLogic.LookDirection lookDirection, float mustBeBeyondDistance, float mustBeWithinDistance, string objectiveName, int priority, bool isPrimaryObjective, bool displayToUser, bool showObjectiveOnLanceDetected, bool excludeFromAutocomplete, List<string> lanceTags, MLanceOverride manuallySpecifiedLance = null)
             {
-                if (__runOriginal) return;
+                if (!__runOriginal) return;
                 if (ModState.HostileToAllLanceTeamOverride.TeamOverride != null)
                 {
                     var objectiveName2 = $"Destroy {ModState.HostileToAllLanceTeamOverride.TeamOverride.FactionDef.Demonym} Lance";
