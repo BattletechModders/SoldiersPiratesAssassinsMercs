@@ -113,7 +113,7 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         public static void Postfix(Team __instance)
         {
             if (MissionControl.MissionControl.Instance.Metrics.NumberOfTargetAdditionalLances < 1) return; 
-            if( ModState.HostileMercLanceTeamOverride.TeamOverride != null)
+            if ( ModState.HostileMercLanceTeamOverride.TeamOverride != null)
             {
                 if (ModState.RoundsInCombat <= 1 && __instance.IsLocalPlayer && __instance.Combat.TurnDirector.IsInterleaved)
                 {
