@@ -5,6 +5,7 @@ using BattleTech.Designed;
 using BattleTech.Framework;
 using BattleTech.UI;
 using HBS;
+using MechSprayPaint.Framework;
 using SoldiersPiratesAssassinsMercs.Framework;
 using UnityEngine;
 using ModState = SoldiersPiratesAssassinsMercs.Framework.ModState;
@@ -188,34 +189,54 @@ namespace SoldiersPiratesAssassinsMercs.Patches
         }
     }
 
-
-    //add bribe ability. disabled
     [HarmonyPatch(typeof(Team), "AddUnit", new Type[] {typeof(AbstractActor)})]
     public static class Team_AddUnit_Patch
     {
-        static bool Prepare() => false; // disable, not doing ability?
+        static bool Prepare() => ModInit.modSettings.BattleRoyaleContracts.Count > 0;
         public static void Postfix(Team __instance, AbstractActor unit)
         {
-            if (MissionControl.MissionControl.Instance.Metrics.NumberOfTargetAdditionalLances < 1) return;
-            if (ModState.HostileMercLanceTeamOverride.TeamOverride != null)
+            if (ModInit.modSettings.BattleRoyaleContracts.Contains(__instance.Combat.ActiveContract.Override.ID))
             {
-                if (__instance.IsLocalPlayer && unit.GetPilot().IsPlayerCharacter)
+                var randomColorInfo = new PainterInfo
                 {
-                    if (!string.IsNullOrEmpty(ModInit.modSettings.BribeAbility))
+                    RandomColors = true
+                };
+
+                var randomLogo = ModState.BattleRoyaleEmblems.GetRandomElement();
+                var tempHeraldry = new HeraldryDef(unit.team.HeraldryDef.Description, randomLogo, "", "", "");
+                var newHeraldry = Util.GetNewHeraldry(tempHeraldry, unit.Combat.DataManager, randomColorInfo, null);
+                var pilotableActorRepresentation = unit.GameRep as PilotableActorRepresentation;
+                if (pilotableActorRepresentation != null)
+                {
+                    pilotableActorRepresentation.paintSchemeInitialized = false;
+                    pilotableActorRepresentation.InitPaintScheme(newHeraldry, unit.team.GUID);
+                }
+            }
+
+
+            if (false)  //add bribe ability. disabled
+            {
+                if (MissionControl.MissionControl.Instance.Metrics.NumberOfTargetAdditionalLances < 1) return;
+                if (ModState.HostileMercLanceTeamOverride.TeamOverride != null)
+                {
+                    if (__instance.IsLocalPlayer && unit.GetPilot().IsPlayerCharacter)
                     {
-                        if (unit.GetPilot().Abilities
-                                .All(x => x.Def.Id != ModInit.modSettings.BribeAbility) &&
-                            unit.ComponentAbilities.All(y =>
-                                y.Def.Id != ModInit.modSettings.BribeAbility))
+                        if (!string.IsNullOrEmpty(ModInit.modSettings.BribeAbility))
                         {
-                            unit.Combat.DataManager.AbilityDefs.TryGet(ModInit.modSettings.BribeAbility,
-                                out var def);
-                            var ability = new Ability(def);
-                            ModInit.modLog?.Trace?.Write(
-                                $"[Team.AddUnit] Adding {ability.Def?.Description?.Id} to {unit.Description?.Name}.");
-                            ability.Init(unit.Combat);
-                            unit.GetPilot().Abilities.Add(ability);
-                            unit.GetPilot().ActiveAbilities.Add(ability);
+                            if (unit.GetPilot().Abilities
+                                    .All(x => x.Def.Id != ModInit.modSettings.BribeAbility) &&
+                                unit.ComponentAbilities.All(y =>
+                                    y.Def.Id != ModInit.modSettings.BribeAbility))
+                            {
+                                unit.Combat.DataManager.AbilityDefs.TryGet(ModInit.modSettings.BribeAbility,
+                                    out var def);
+                                var ability = new Ability(def);
+                                ModInit.modLog?.Trace?.Write(
+                                    $"[Team.AddUnit] Adding {ability.Def?.Description?.Id} to {unit.Description?.Name}.");
+                                ability.Init(unit.Combat);
+                                unit.GetPilot().Abilities.Add(ability);
+                                unit.GetPilot().ActiveAbilities.Add(ability);
+                            }
                         }
                     }
                 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using BattleTech;
+using BattleTech.Data;
 using BattleTech.UI;
+using MechSprayPaint.Framework;
 using SoldiersPiratesAssassinsMercs.Framework;
 using UnityEngine;
 
@@ -8,6 +10,19 @@ namespace SoldiersPiratesAssassinsMercs.Patches
 {
     public class SimGamePatches
     {
+        [HarmonyPatch(typeof(SimGameState), "RequestDataManagerResources")]
+        public static class SimGameState_RequestDataManagerResources_Patch
+        {
+            static bool Prepare() => ModInit.modSettings.BattleRoyaleContracts.Count > 0;
+            public static void Postfix(SimGameState __instance)
+            {
+                LoadRequest loadRequest = __instance.DataManager.CreateLoadRequest(null, false);
+                loadRequest.AddAllOfTypeBlindLoadRequest(BattleTechResourceType.Texture2D, new bool?(true));
+                loadRequest.ProcessRequests(10U);
+                ModState.BuildEmblems(__instance.DataManager);
+            }
+        }
+
         [HarmonyPatch(typeof(SimGameState), "AddCachedFactionsToDisplayList",
             new Type[] { })]
         public static class SimGameState_AddCachedFactionsToDisplayList

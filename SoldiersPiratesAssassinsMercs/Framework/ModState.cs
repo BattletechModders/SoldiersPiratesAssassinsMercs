@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BattleTech;
+using BattleTech.Data;
 using BattleTech.Framework;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -13,6 +14,7 @@ namespace SoldiersPiratesAssassinsMercs.Framework
 { 
     public class ModState
     {
+        public static HashSet<string> BattleRoyaleEmblems = new HashSet<string>();
         //these stay through play session
         public static Dictionary<string, List<string>> UniversalFactionFallbackMap = new Dictionary<string, List<string>>();
         public static List<string> simDisplayedFactions = new List<string>();
@@ -44,6 +46,22 @@ namespace SoldiersPiratesAssassinsMercs.Framework
         public static int BribeSuccess = 0;
         //public static bool QueueBribePopup = false;
         public static List<Vector3> UnitSpawnPointLocs = new List<Vector3>();
+
+        public static void BuildEmblems(DataManager dm)
+        {
+            var manifestList = new List<VersionManifestEntry>();
+            manifestList.AddRange(dm.Unlocks.GetHeraldryEntries());
+            VersionManifestAddendum addendumByName = dm.ResourceLocator.GetAddendumByName("PlayerEmblems");
+            manifestList.AddRange(dm.ResourceLocator.AllEntriesOfResourceFromAddendum(BattleTechResourceType.Sprite, addendumByName, false));
+            foreach (var item in manifestList)
+            {
+                ModState.BattleRoyaleEmblems.Add(item.Id);
+            }
+            foreach (var heraldry in dm.Heraldries)
+            {
+                ModState.BattleRoyaleEmblems.Add(heraldry.Value.textureLogoID);
+            } 
+        }
 
         public static void BuildFallbackMap()
         {

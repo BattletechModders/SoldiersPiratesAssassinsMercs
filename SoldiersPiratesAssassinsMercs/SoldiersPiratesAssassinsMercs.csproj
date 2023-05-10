@@ -52,6 +52,10 @@
       <HintPath>$(SoldiersPiratesAssassinsMercsModPath)\..\IRBTModUtils\IRBTModUtils.dll</HintPath>
       <Private>False</Private>
     </Reference>
+  <Reference Include="MechSprayPaint">
+    <HintPath>$(SoldiersPiratesAssassinsMercsModPath)\..\MechSprayPaint\MechSprayPaint.dll</HintPath>
+	<Private>False</Private>
+  </Reference>
 	 <Reference Include="MissionControl">
       <HintPath>$(SoldiersPiratesAssassinsMercsModPath)\..\MissionControl\MissionControl.dll</HintPath>
       <Private>False</Private>
