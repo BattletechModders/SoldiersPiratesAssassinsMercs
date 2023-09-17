@@ -415,7 +415,15 @@ namespace SoldiersPiratesAssassinsMercs.Framework
                 var totalValue = 0;
                 foreach (var unit in mercTeam.units)
                 {
-                    
+                    switch (unit.PilotableActorDef)
+                    {
+                        case MechDef mechDef:
+                            mechDef.RefreshBattleValue();
+                            break;
+                        case VehicleDef vDef:
+                            vDef.RefreshBattleValue();
+                            break;
+                    }
                     totalValue += unit.PilotableActorDef.BattleValue;
                     ModInit.modLog?.Info?.Write($"[CalculateBribeCostAndSuccess] Unit {unit.DisplayName} - {unit.PilotableActorDef.Description.Id} is worth {unit.PilotableActorDef.BattleValue}");
 
